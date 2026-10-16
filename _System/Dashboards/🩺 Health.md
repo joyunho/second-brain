@@ -71,9 +71,9 @@ rows.length ? dv.table(["노트", "지워야 할 태그"], rows) : dv.paragraph(
 
 ## ⏳ 7일 넘게 Inbox에 있는 노트
 ```dataview
-TABLE WITHOUT ID file.link AS "노트", (date(today) - file.cday).days AS "경과(일)"
+TABLE WITHOUT ID file.link AS "노트", round((number(dateformat(date(today), "X")) - number(dateformat(file.cday, "X"))) / 86400) AS "경과(일)"
 FROM "00_Inbox"
-WHERE type != "허브" AND (date(today) - file.cday).days > 7
+WHERE type != "허브" AND file.cday < date(today) - dur(7 days)
 SORT file.cday ASC
 ```
 
@@ -141,7 +141,7 @@ const n = hub ? hub.file.inlinks.length : 0;
 dv.paragraph(n > 200
   ? `> [!warning] 💎 영구 노트 허브를 가리키는 노트가 **${n}**개 — 200개를 넘었어요. tpl-idea의 \`up\`을 빼고 \`area\` · \`source\` 링크만 남기는 것을 고려하세요.`
   : `✅ 💎 영구 노트 허브 inlink ${n}개 (경고 기준 200)`);
-const habits = dv.pages('"60_습관"').where(p => p.type === "습관").length;
+const habits = dv.pages('"60_습관"').where(p => p.type === "습관" && !p.yk_deleted && !p.yk_missing).length;
 if (habits > 10) dv.paragraph(`> [!note] 습관 노트가 ${habits}개 — 10개를 넘으면 빨간 점이 "소수"가 아니게 돼요. 습관의 \`tags: [hub]\`를 빼고 주황으로 내리는 것을 고려하세요.`);
 ```
 

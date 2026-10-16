@@ -9,7 +9,7 @@ if (/\/자료$/.test(folder0)) {
   const draft = window.__ykProjectDraft || null;      // 라우터 ⚡ 빠른 입력이 만들 때: 질문 없이 기본값
   if (draft) delete window.__ykProjectDraft;
   const today = tp.date.now("YYYY-MM-DD");
-  const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim(); return t || "이름 없음"; };
+  const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
   const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
   const aZ = (area, name) => { const a = `${area || ""} ${name}`;
     return /(건강|운동|헬스|몸)/.test(a) ? "💪" : /(유튜브|영상|채널)/.test(a) ? "🎬" : /(게임|에임|랭크)/.test(a) ? "🎮"
@@ -76,7 +76,7 @@ created: ${today}
 ${F}dataview
 TABLE WITHOUT ID file.link AS "할 일", status AS "상태", priority_label AS "우선순위", due AS "마감"
 FROM "30_할일/목록"
-WHERE contains(string(project), this.file.name)
+WHERE project = link(this.file.name) AND !yk_deleted AND !yk_missing
 SORT status ASC, priority DESC
 ${F}
 
@@ -100,7 +100,8 @@ const m = txt.match(new RegExp("%% yk:" + "checklist:start %%([^]*?)%% yk:" + "c
 const body = m ? m[1] : txt;
 const chk = body.split("\\n").filter(l => /^\\s*- \\[[ xX\\/-]\\]\\s*\\S/.test(l));
 const chkDone = chk.filter(l => /^\\s*- \\[[xX]\\]/.test(l)).length;
-const tasks = dv.pages('"30_할일/목록"').where(p => String(p.project ?? "").includes(cur.file.name));
+const linkName = v => !v ? "" : (v.path ? String(v.path) : String(v).replace(/^\\[\\[|\\]\\]$/g, "").split("|")[0]).split("/").pop().replace(/\\.md$/, "");
+const tasks = dv.pages('"30_할일/목록"').where(p => linkName(p.project) === cur.file.name && !p.yk_deleted && !p.yk_missing);
 const tAll = tasks.where(p => p.status !== "달성 못함").length;
 const tDone = tasks.where(p => p.status === "완료").length;
 const total = chk.length + tAll, done = chkDone + tDone;

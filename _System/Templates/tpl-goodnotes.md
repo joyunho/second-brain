@@ -24,7 +24,7 @@ area: <% area ? `"[[${area}]]"` : "" %>
 
 ## 이 노트에서 나온 영구 노트 (→ [[💎 영구 노트]])
 ```dataview
-LIST FROM "90_영구" WHERE contains(string(source), this.file.name)
+LIST FROM "90_영구" WHERE contains(source, link(this.file.name))
 ```
 - 
 

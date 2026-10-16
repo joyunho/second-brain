@@ -32,7 +32,7 @@ created: <% today %>
 ```dataview
 TABLE WITHOUT ID file.link AS "프로젝트", status AS "상태", due AS "마감", next_action AS "다음 행동"
 FROM "40_프로젝트"
-WHERE type = "프로젝트" AND contains(string(area), "<% title %>") AND status != "완료"
+WHERE type = "프로젝트" AND contains(area, link("<% title %>")) AND status != "완료" AND !yk_deleted AND !yk_missing
 SORT due ASC
 ```
 
@@ -40,7 +40,7 @@ SORT due ASC
 ```dataview
 TABLE WITHOUT ID file.link AS "노트", type AS "유형", file.cday AS "날짜"
 FROM -"_System" AND -"70_분야"
-WHERE contains(string(area), "<% title %>")
+WHERE contains(area, link("<% title %>")) AND !yk_deleted AND !yk_missing
 SORT file.cday DESC
 LIMIT 30
 ```

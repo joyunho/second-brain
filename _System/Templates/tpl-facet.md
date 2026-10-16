@@ -3,7 +3,7 @@
    부모 폴더 이름으로 종류/기분/태그를 판별합니다. importer가 앱 설정(settings)에서 같은 노트를 만들 때는 yk_id 등을 더 채웁니다. */
 const folder = tp.file.folder(true);
 const facet = ["종류", "기분", "태그"].find(f => folder.endsWith("/" + f)) || (await tp.system.suggester(["종류", "기분", "태그"], ["종류", "기분", "태그"], false, "어떤 facet 인가요?")) || "태그";
-const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim(); return t || "이름 없음"; };
+const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
 const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\n/g, "\\n")}"`;
 const safeRename = async (base) => {   // 같은 폴더에 같은 이름이 있으면 " (2)", " (3)" — rename 실패로 템플릿이 멈추지 않게
   let dir = tp.file.folder(true); if (dir === "/") dir = "";
@@ -49,7 +49,7 @@ ${score != null ? `score: ${score}\n` : ""}`;
   where = `mood = "${value}"`;
 } else {
   fm = `source: used\n`;
-  where = `contains(tags, "${value}")`;
+  where = `econtains(tags, "#${value}")`;   // Dataview 의 tags 는 #접두 — 부분 일치(contains) 대신 정확 일치
 }
 tR += `---
 type: ${facet}

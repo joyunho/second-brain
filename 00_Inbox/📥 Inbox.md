@@ -12,7 +12,7 @@ cssclasses: [hub]
 
 ## 처리 대기
 ```dataview
-TABLE WITHOUT ID file.link AS "노트", file.tags AS "태그", file.cday AS "생성", (date(today) - file.cday).days AS "경과(일)"
+TABLE WITHOUT ID file.link AS "노트", file.tags AS "태그", file.cday AS "생성", round((number(dateformat(date(today), "X")) - number(dateformat(file.cday, "X"))) / 86400) AS "경과(일)"
 FROM "00_Inbox"
 WHERE type != "허브"
 SORT file.cday ASC

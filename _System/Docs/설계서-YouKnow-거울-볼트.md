@@ -160,7 +160,7 @@ habits_checked: 2
 
 ## ✅ 오늘 할 일
 ### 지난 마감
-```dataview TABLE … FROM "30_할일/목록" WHERE due < date(2026-10-16) AND status != "완료" AND status != "달성 못함"```
+```dataview TABLE … FROM "30_할일/목록" WHERE due AND due < date(2026-10-16) AND status != "완료" AND status != "달성 못함" AND !yk_deleted AND !yk_missing```
 ### 오늘 마감
 ```dataview … WHERE due = date(2026-10-16)```   +   ```tasks not done / due on 2026-10-16 / hide backlink / short mode```
 ### 달성 못함
@@ -295,7 +295,7 @@ yk_url: https://…/#/tasks/<id>
 - 
 ```
 - 체크박스 기호: 진행 전 `[ ]`, 진행 중 `[/]`(Tasks 코어 In-Progress), 완료 `[x]`, 달성 못함 `[-]`(Tasks 코어 Cancelled). 우선순위 이모지: 5 🔺, 4 ⏫, 3 없음, 2 🔽, 1 ⏬. `🆔 yk-<uuid 앞 8자>`가 Tasks에서 보이는 두 번째 멱등 키.
-- 완료 줄에는 `✅ <due_date>`를 붙인다(**앱에 완료 시각 컬럼이 없어 마감일을 완료일로 간주**, due가 없으면 ✅ 생략 — 주간 노트 "끝낸 일" 쿼리용 근사치임을 ✅ 할 일 허브에 명시).
+- 완료 줄에는 `✅ <due_date>`를 붙인다(**앱에 완료 시각 컬럼이 없어 마감일을 완료일로 간주**, due가 없으면 ✅ 생략 — 주간 노트 "끝낸 일" 쿼리용 근사치임을 ✅ 할 일 허브에 명시). 볼트에서 Tasks 플러그인으로 체크해 붙은 `✅ <실제 날짜>`는 importer 가 읽어 소유 키 `done`에 간직하고 그 날짜를 유지한다. 휴지통 행(`deleted_at`)의 줄은 `[-]`로 써 Tasks `not done` 질의에서 빠진다.
 - Google Calendar 링크 줄(앱 "구글 캘린더에 추가"와 동일): `https://calendar.google.com/calendar/render?action=TEMPLATE&text=<title>&dates=<due||start||오늘 YYYYMMDD>/<다음날>&details=YouKnow%20Meta%20data%20%ED%95%A0%20%EC%9D%BC`.
 - 필수 선: daily, (마감), (project) → 1~3선. 상태·우선순위는 선을 만들지 않는다(의도).
 
@@ -529,7 +529,7 @@ body { --graph-node: #e8ecf5; --graph-line: rgba(170,178,192,0.22); --graph-line
 `import_goodnotes.py` 유지, 출력 `80_문헌/굿노트/<노트북>.md`, PDF `_Attachments/GoodNotes/`. tpl-goodnotes에서 유형 태그 제거·`type: 굿노트`·`area` 질문.
 
 ### 6-5. 단축어 / 위젯
-① YouKnow "YouKnow에 추가"(Siri)·Scriptable 위젯 그대로(→ 앱 → 야간 import). ② Obsidian 직행 단축어 "뇌에 추가"(Advanced URI 플러그인 추가 설치): `obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&data={{텍스트}}&mode=new` → tpl-inbox가 파일명이 `⚡`로 시작하면 메뉴 없이 capture.js로 본문을 바로 파싱·라우팅. 공유 시트 URL은 12번 자료 분기.
+① YouKnow "YouKnow에 추가"(Siri)·Scriptable 위젯 그대로(→ 앱 → 야간 import). ② Obsidian 직행 단축어 "뇌에 추가"(Advanced URI 플러그인 추가 설치): `obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}`(`data`는 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>` 로 시작 — Templater 폴더 템플릿은 빈 파일에만 적용되므로 이 줄이 tpl-inbox를 실행시킨다) → tpl-inbox가 파일명이 `⚡`로 시작하면 메뉴 없이 capture.js로 본문을 바로 파싱·라우팅. 공유 시트 URL은 12번 자료 분기.
 
 ### 6-6. 📋 Task Inbox · 일간 체크박스
 노트 없는 할 일은 계속 허용. 주간 리뷰에서 ⚡로 승격하거나 그대로 둠. ✅ 할 일 허브와 일간 노트는 Dataview(노트형)와 Tasks 쿼리(체크박스형)를 둘 다 보여 준다.
@@ -626,7 +626,7 @@ settings → facet(종류/기분/태그) → projects(+70_분야) → project_se
 - **습관 노트가 빨강(허브)**: 일간 노트 365개가 가리키므로 사실상 허브다. 습관이 10개를 넘으면 빨간 점이 "소수"가 아니게 된다 → 그때 `tags: [hub]`를 빼고 주황으로 내리는 한 줄 변경.
 - **일간 스켈레톤을 매일 생성**: 1년 365파일(빈 날 포함). 사슬·요일 선이 끊기지 않는 대가로 파일 수가 는다. `--no-fill-days`로 끌 수 있고, Calendar 플러그인은 기존 파일을 그대로 연다.
 - **하루 계획·습관 체크는 이모지 불릿**: Tasks 플러그인이 할 일로 오인하지 않지만 체크박스 클릭으로 토글할 수 없다(앱에서 토글 → 야간 반영, 또는 텍스트 편집).
-- **완료 할 일의 `✅` 날짜는 마감일 근사치**: 앱에 완료 시각이 없다. 주간 "끝낸 일"은 근사치임을 허브에 명시.
+- **앱에서 끝낸 할 일의 `✅` 날짜는 마감일 근사치**: 앱에 완료 시각이 없다. 볼트에서 체크한 실제 날짜는 `done`으로 보존. 주간 "끝낸 일"은 앱 주(일~토)로 센다.
 - **frontmatter 중복(mood+기분, tags+태그, due+마감)**: 평문은 Dataview/Tasks/앱 호환, 링크는 그래프 선. 키가 늘지만 무손실.
 - **양방향 동기화 아님**: 앱→볼트 자동·무손실(REST 모드), 볼트→앱은 일기(쉼)·할 일(선택적 POST)만. 상태 변경·습관 체크 해제는 `yk_dirty` 목록으로 수동. 앱이 가져오기 API를 제공하지 않는 한 불가피.
 - **앱 ".md 일기 가져오기"에 볼트 파일을 직접 드래그하는 것은 보장하지 않음**: `type: 일기`라 종류가 일반으로 떨어지고, 속성 편집기가 태그를 블록 리스트로 바꾸면 앱이 못 읽는다. 쉼이 정확한 형식을 만든다.

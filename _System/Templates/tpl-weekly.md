@@ -45,14 +45,14 @@ if (rows.length) dv.table(["날", "계획", "습관"], rows);
 ```dataview
 TABLE WITHOUT ID file.link AS "할 일", status AS "상태", priority_label AS "우선순위", due AS "마감", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due >= date(<% appS %>) AND due <= date(<% appE %>)
+WHERE due >= date(<% appS %>) AND due <= date(<% appE %>) AND !yk_deleted AND !yk_missing
 SORT due ASC, priority DESC
 ```
 
 ## 📔 이번 주 기분
 ```dataviewjs
 const from = dv.date("<% appS %>"), to = dv.date("<% appE %>");
-const logs = dv.pages('"50_일기"').where(p => p.type === "일기" && p.date && p.date >= from && p.date <= to).sort(p => p.date);
+const logs = dv.pages('"50_일기"').where(p => p.type === "일기" && p.date && !p.yk_deleted && p.date >= from && p.date <= to).sort(p => p.date);
 const scored = logs.where(p => typeof p.mood_score === "number");
 const avg = scored.length ? (scored.array().reduce((a, p) => a + p.mood_score, 0) / scored.length).toFixed(1) : "–";
 dv.paragraph("일기 " + logs.length + "개 · 평균 기분 **" + avg + "**/5 (최고5 좋음4 보통3 별로2 힘듦1)");
@@ -67,10 +67,10 @@ WHERE type != "허브"
 SORT file.cday ASC
 ```
 
-## ✅ 이번 주 끝낸 일
+## ✅ 이번 주 끝낸 일 (앱 주: <% appS %> 일 ~ <% appE %> 토)
 ```tasks
-done after <% start.clone().subtract(1, "day").format("YYYY-MM-DD") %>
-done before <% end.clone().add(1, "day").format("YYYY-MM-DD") %>
+done after <% moment(appS).subtract(1, "day").format("YYYY-MM-DD") %>
+done before <% moment(appE).add(1, "day").format("YYYY-MM-DD") %>
 short mode
 ```
 > 할 일 노트의 ✅ 완료일은 앱에 완료 시각이 없어 **마감일로 간주**한 근사치입니다 ([[✅ 할 일]] 참고).

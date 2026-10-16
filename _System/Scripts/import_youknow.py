@@ -33,7 +33,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from zoneinfo import ZoneInfo
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -81,9 +81,9 @@ CALLOUT_TITLE = "> [!note] 📲 YouKnow에서 바뀐 내용 ({date})"
 
 # importer 소유 frontmatter 키(§7-3 2a) — 이 밖의 키는 사용자 소유라 보존된다
 OWNED_KEYS = {
-    "yk_id", "yk_hash", "yk_updated", "yk_url", "yk_key", "yk_deleted", "yk_missing", "yk_dirty", "yk_pending", "yk_area",
+    "yk_id", "yk_hash", "yk_blocks", "yk_updated", "yk_url", "yk_key", "yk_deleted", "yk_missing", "yk_dirty", "yk_pending", "yk_pushed", "yk_area",
     "date", "title", "diary_type", "종류", "mood", "mood_score", "기분", "parts", "duration_min", "intensity", "photos", "cover", "created",
-    "status", "priority", "priority_label", "start", "due", "daily", "마감", "project",
+    "status", "priority", "priority_label", "start", "due", "done", "daily", "마감", "project",
     "goal", "next_action", "area", "emoji", "url", "kind", "sort_order", "updated", "color", "color_name", "weekday",
     "plans", "plans_done", "habits_checked", "icon", "template", "score", "source", "photos_pending",
 }
@@ -93,14 +93,61 @@ OWNED_KEYS = {
 # 작은 도우미
 # ──────────────────────────────────────────────────────────────────────────────
 def E(s) -> str:
-    """앱과 동일한 파일명 sanitizer."""
+    """앱과 동일한 파일명 sanitizer(+ 앞뒤 점 제거: `.env`처럼 점으로 시작하는 파일은 Obsidian 이 숨기고 인덱스도 건너뛴다)."""
     t = FORBIDDEN.sub(" ", str(s if s is not None else ""))
-    t = re.sub(r"\s+", " ", t).strip()
+    t = re.sub(r"\s+", " ", t).strip().strip(". ").strip()
     return t or "이름 없음"
+
+
+FNAME_MAX_BYTES = 200   # 파일명 바이트 상한(ext4/APFS NAME_MAX 255 − ' (n).md' 여유). 한글 3바이트 → 약 66자
+
+
+def fname(s) -> str:
+    """파일명용 E(): 너무 긴 제목은 UTF-8 바이트 예산 안으로 자른다(전체 제목은 frontmatter title 에 남는다)."""
+    t = E(s)
+    if len(t.encode("utf-8")) <= FNAME_MAX_BYTES:
+        return t
+    t = t.encode("utf-8")[:FNAME_MAX_BYTES].decode("utf-8", "ignore").strip().strip(". ").strip()
+    return t or "이름 없음"
+
+
+def photo_base(p) -> str:
+    """Storage 경로 → 안전한 파일명(마지막 조각만, `\\`·`[[`·`..` 제거). 빈 문자열이면 쓸 수 없는 이름."""
+    name = PurePosixPath(str(p or "").replace("\\", "/")).name
+    b = E(name)
+    return "" if b in ("", "이름 없음") else b
 
 
 def sha1(s: str) -> str:
     return hashlib.sha1(s.encode("utf-8")).hexdigest()
+
+
+def block_hash(content: str) -> str:
+    """관리 블록 '직전 가져온 내용' 해시(앞 12자) — 캐시와 노트 frontmatter(yk_blocks) 양쪽에 같은 모양으로 둔다."""
+    return sha1(content)[:12]
+
+
+def same_hash(h, content: str) -> bool:
+    """저장된 블록 해시(옛 캐시의 40자 전체 또는 12자)와 내용 비교."""
+    if not h:
+        return False
+    hs = str(h)
+    return sha1(content)[:len(hs)] == hs if len(hs) <= 40 else False
+
+
+def yk_blocks_value(block_hashes: dict[str, str]) -> list[str]:
+    return [f"{n}:{h}" for n, h in block_hashes.items()]
+
+
+def parse_yk_blocks(v) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for item in as_list(v):
+        s = str(item)
+        if ":" in s:
+            n, h = s.split(":", 1)
+            if n.strip() and re.fullmatch(r"[0-9a-f]{6,40}", h.strip()):
+                out[n.strip()] = h.strip()
+    return out
 
 
 def id8(uuid: str, width: int = 8) -> str:
@@ -201,6 +248,33 @@ def rel(path: Path, vault: Path) -> str:
 # ──────────────────────────────────────────────────────────────────────────────
 PLAIN_OK = re.compile(r"^[0-9A-Za-z가-힣ㄱ-ㅎㅏ-ㅣ_.\-/ ·]+$")
 RESERVED = {"true", "false", "null", "yes", "no", "on", "off", "~", ""}
+# js-yaml(Obsidian)이 숫자로 읽는 토큰: 1e5 · 0x1F · 1_000 · .5 · 1. · 0o17 · 0b101 · .inf · .nan — 평문으로 두면 title 이 숫자가 된다
+YAML_NUMLIKE = re.compile(
+    r"^-?(?:0[bB][01_]+|0[oO][0-7_]+|0[xX][0-9a-fA-F_]+|[0-9][0-9_]*(?:\.[0-9_]*)?(?:[eE][-+]?[0-9]+)?|\.[0-9_]+(?:[eE][-+]?[0-9]+)?|\.(?:inf|Inf|INF|nan|NaN|NAN))$")
+
+
+class Verbatim:
+    """fm_load 가 해석하지 않고 그대로 보존하는 frontmatter 줄 묶음(블록 스칼라 `|`/`>`, 중첩 맵, 빈 값 `key:`, `# 주석`).
+    fm_dump 는 이 줄들을 원래 자리에 그대로 쓴다. 값으로서는 비어 있는 것(falsy)으로 취급한다."""
+    __slots__ = ("lines",)
+
+    def __init__(self, lines: list[str]):
+        self.lines = list(lines)
+
+    def __bool__(self):
+        return False
+
+    def __str__(self):
+        return ""
+
+    def __eq__(self, other):
+        return isinstance(other, Verbatim) and other.lines == self.lines
+
+    def __hash__(self):
+        return hash(tuple(self.lines))
+
+    def __repr__(self):
+        return f"Verbatim({self.lines!r})"
 
 
 def yaml_scalar(v) -> str:
@@ -211,9 +285,9 @@ def yaml_scalar(v) -> str:
     if isinstance(v, (int, float)):
         return str(v)
     s = str(v)
-    if s.lower() in RESERVED or re.match(r"^-?\d+(\.\d+)?$", s) or DATE_RE.match(s):
-        if DATE_RE.match(s):
-            return s  # 날짜는 평문으로 두어야 Dataview date 로 읽힌다
+    if DATE_RE.match(s):
+        return s  # 날짜는 평문으로 두어야 Dataview date 로 읽힌다
+    if s.lower() in RESERVED or YAML_NUMLIKE.match(s):
         return json.dumps(s, ensure_ascii=False)
     if PLAIN_OK.match(s) and not s.startswith("-") and not s.endswith(":") and "  " not in s:
         return s
@@ -222,20 +296,22 @@ def yaml_scalar(v) -> str:
 
 def yaml_value(v) -> str:
     if isinstance(v, (list, tuple)):
-        return "[" + ", ".join(yaml_scalar(x) for x in v) + "]"
+        return "[" + ", ".join(yaml_scalar(x) for x in v if not isinstance(x, Verbatim)) + "]"
     return yaml_scalar(v)
 
 
 def fm_dump(fm: dict) -> str:
     lines = ["---"]
     for k, v in fm.items():
-        if k == "__raw__":
+        if isinstance(v, Verbatim):      # 블록 스칼라·중첩 맵·빈 값·주석(__raw__N) — 원문 그대로, 제자리에
+            lines.extend(v.lines)
+            continue
+        if k == "__raw__":               # 옛 캐시/호환: 위치를 모르는 잔여 줄은 yk_* 앞(여기)에
+            lines.extend(v or [])
             continue
         if v is None:
             continue
         lines.append(f"{k}: {yaml_value(v)}")
-    for raw in fm.get("__raw__", []) or []:
-        lines.append(raw)
     lines.append("---")
     return "\n".join(lines) + "\n"
 
@@ -270,9 +346,13 @@ def _parse_scalar(s: str):
 
 def _split_inline_list(s: str) -> list:
     out, cur, q, depth = [], "", None, 0
-    for ch in s:
+    it = iter(s)
+    for ch in it:
         if q:
             cur += ch
+            if q == '"' and ch == "\\":
+                cur += next(it, "")   # 이스케이프된 다음 문자(\" 등)는 닫는 따옴표가 아니다
+                continue
             if ch == q:
                 q = None
             continue
@@ -299,59 +379,82 @@ def fm_load(text: str) -> tuple[dict, str]:
     """`---` 블록을 인라인 리스트와 블록 리스트(`- `) 둘 다 읽는 관용 파서. (fm, body) 반환."""
     if not text.startswith("---"):
         return {}, text
-    m = re.match(r"^---\r?\n([\s\S]*?)\r?\n---[ \t]*\r?\n?", text)
+    # 빈 블록(`---\n---`)도 frontmatter 다 — 빈 경우를 먼저 시도해야 본문의 `---` 수평선을 닫는 펜스로 오인하지 않는다
+    m = re.match(r"^---[ \t]*\r?\n(?:---[ \t]*\r?\n?|([\s\S]*?)\r?\n---[ \t]*\r?\n?)", text)
     if not m:
         return {}, text
-    block, body = m.group(1), text[m.end():]
+    block, body = (m.group(1) or ""), text[m.end():]
     fm: dict = {}
-    raw: list[str] = []
+    nraw = 0
     lines = block.split("\n")
     i = 0
     while i < len(lines):
         line = lines[i].rstrip("\r")
         i += 1
-        if not line.strip() or line.lstrip().startswith("#"):
+        if not line.strip():
+            continue
+        if line.lstrip().startswith("#"):          # 주석은 제자리에 보존
+            fm[f"__raw__{nraw}"] = Verbatim([line])
+            nraw += 1
             continue
         km = re.match(r"^([^\s:][^:]*?):(?:\s+(.*))?$", line)
         if not km:
-            raw.append(line)
+            fm[f"__raw__{nraw}"] = Verbatim([line])
+            nraw += 1
             continue
         key, val = km.group(1).strip(), (km.group(2) or "").strip()
-        if val == "":
+        if re.match(r"^[|>][+-]?\d?$|^[|>]\d?[+-]?$", val):
+            # 블록 스칼라(summary: |) — 들여쓴 줄 전부 원문 그대로
+            vb = [line]
+            while i < len(lines) and (lines[i].startswith((" ", "\t")) or not lines[i].strip()):
+                if not lines[i].strip() and not (i + 1 < len(lines) and lines[i + 1].startswith((" ", "\t"))):
+                    break
+                vb.append(lines[i].rstrip("\r"))
+                i += 1
+            fm[key] = Verbatim(vb)
+        elif val == "":
             items = []
             is_list = False
             while i < len(lines) and re.match(r"^\s*-\s*", lines[i]) and not lines[i].strip().startswith("---"):
                 is_list = True
                 items.append(_parse_scalar(re.sub(r"^\s*-\s*", "", lines[i].rstrip("\r"))))
                 i += 1
-            fm[key] = items if is_list else None
+            if is_list:
+                fm[key] = items
+            elif i < len(lines) and lines[i].startswith((" ", "\t")) and lines[i].strip():
+                # 중첩 맵(meta:\n  nested: 1) — 들여쓴 줄 전부 원문 그대로
+                vb = [line]
+                while i < len(lines) and lines[i].startswith((" ", "\t")) and lines[i].strip():
+                    vb.append(lines[i].rstrip("\r"))
+                    i += 1
+                fm[key] = Verbatim(vb)
+            else:
+                fm[key] = Verbatim([line])      # 빈 값(`energy:`, Obsidian 속성 UI가 만든 것) — 지우지 않고 그대로
         elif re.match(r"^\[\[[^\[\]]+\]\]$", val):
             fm[key] = val      # 따옴표 없는 [[링크]] 하나 — YAML 로는 중첩 리스트지만 Obsidian/Dataview 처럼 링크 문자열로 읽는다
         elif val.startswith("[") and val.endswith("]"):
             fm[key] = _split_inline_list(val[1:-1])
         else:
             fm[key] = _parse_scalar(val)
-    if raw:
-        fm["__raw__"] = raw
     return fm, body
 
 
 def order_fm(fm: dict) -> dict:
-    """결정적 키 순서: type · up · 내용 키(주어진 순서) · tags · 태그 · 사용자 키 · yk_* · yk_hash."""
+    """결정적 키 순서: type · up · 내용 키(주어진 순서) · tags · 태그 · 사용자 키(주석·원문 줄 포함) · yk_* · yk_hash."""
     keys = list(fm.keys())
     head = [k for k in ("type", "up") if k in fm]
     yk = [k for k in keys if k.startswith("yk_") and k != "yk_hash"]
     tags = [k for k in ("tags", "태그") if k in fm]
-    mid = [k for k in keys if k not in head and k not in yk and k not in tags and k != "yk_hash" and k != "__raw__"]
-    ordered = head + mid + tags + yk + (["yk_hash"] if "yk_hash" in fm else []) + (["__raw__"] if "__raw__" in fm else [])
+    mid = [k for k in keys if k not in head and k not in yk and k not in tags and k != "yk_hash"]
+    ordered = head + mid + tags + yk + (["yk_hash"] if "yk_hash" in fm else [])
     return {k: fm[k] for k in ordered}
 
 
 def as_list(v) -> list:
-    if v is None:
+    if v is None or isinstance(v, Verbatim):
         return []
     if isinstance(v, list):
-        return [x for x in v if x is not None]
+        return [x for x in v if x is not None and not isinstance(x, Verbatim)]
     return [v]
 
 
@@ -384,8 +487,28 @@ def get_block(text: str, name: str) -> str | None:
     return "\n".join(lines[si + 1:ei])
 
 
-def set_block(text: str, name: str, content: str, header: str | None, log: list[str] | None = None, label: str = "") -> tuple[str, str]:
-    """블록 내용 교체. 마커가 없으면 header 아래 재삽입, header 도 없으면 파일 끝에 1회 추가. (text, 상태) 반환."""
+ANY_MARK_RE = re.compile(r"^%% yk:[^:]+:(start|end) %%$")
+OWNED_LINE_RE = re.compile(r"%%yk:\w+ |^- (✅|❌|⬜) \[\[|^\|")   # importer 가 쓴 줄이라고 확신할 수 있는 모양(인라인 id 마커·습관 불릿·일과표 행)
+
+
+def _stale_run(lines: list[str], start: int, step: int, free: bool) -> int:
+    """고아 마커 옆에 남은 옛 블록 줄의 범위 끝(배타)을 찾는다. free(자유 텍스트)면 빈 줄·헤딩·다른 마커 전까지,
+    아니면 importer 가 쓴 줄이라고 확신할 수 있는 줄만(사용자 줄은 절대 지우지 않는다)."""
+    j = start
+    while 0 <= j < len(lines):
+        ln = lines[j]
+        if not ln.strip() or ln.startswith("#") or ANY_MARK_RE.match(ln.strip()):
+            break
+        if not free and not OWNED_LINE_RE.search(ln):
+            break
+        j += step
+    return j
+
+
+def set_block(text: str, name: str, content: str, header: str | None, log: list[str] | None = None, label: str = "",
+              free: bool = False) -> tuple[str, str]:
+    """블록 내용 교체. 마커가 없으면 header 아래 재삽입, header 도 없으면 파일 끝에 1회 추가. (text, 상태) 반환.
+    마커 하나만 지워졌으면 남은 마커 자리에서 블록을 다시 닫고 그 옆의 옛 블록 줄을 치운다(중복 방지)."""
     s, e = block_markers(name)
     lines = text.split("\n")
     si = ei = None
@@ -399,6 +522,21 @@ def set_block(text: str, name: str, content: str, header: str | None, log: list[
     if si is not None and ei is not None:
         lines[si:ei + 1] = new_lines
         return "\n".join(lines), "replaced"
+    if si is not None and ei is None:
+        # 끝 마커만 사라짐: 시작 마커 + 그 아래 이어지는 옛 블록 줄을 통째로 교체
+        j = _stale_run(lines, si + 1, +1, free)
+        lines[si:j] = new_lines
+        if log is not None:
+            log.append(f"  ↺ {label}: `{name}` 끝 마커가 사라져 시작 마커 자리에서 블록을 다시 닫음")
+        return "\n".join(lines), "reclosed"
+    only_end = next((idx for idx, ln in enumerate(lines) if ln.strip() == e), None)
+    if only_end is not None:
+        # 시작 마커만 사라짐: 끝 마커 위의 옛 블록 줄 + 끝 마커를 통째로 교체
+        j = _stale_run(lines, only_end - 1, -1, free)
+        lines[j + 1:only_end + 1] = new_lines
+        if log is not None:
+            log.append(f"  ↺ {label}: `{name}` 시작 마커가 사라져 끝 마커 자리에서 블록을 다시 닫음")
+        return "\n".join(lines), "reclosed"
     if header:
         for idx, ln in enumerate(lines):
             if ln.strip() == header.strip() or (header.endswith(" ") and ln.startswith(header)):
@@ -683,9 +821,11 @@ class Index:
                 continue
             if str(fm.get("title") or Path(relp).stem) != title:
                 continue
-            if (str(fm.get("due")) if fm.get("due") else None) != (due or None):
-                continue
-            fcd = parse_date(str(fm.get("created") or ""))
+            pushed = parse_date(str(fm.get("yk_pushed") or ""))
+            if not pushed and (str(fm.get("due")) if fm.get("due") else None) != (due or None):
+                continue      # --push-pending 으로 보낸 노트는 지난 마감을 보내지 않으므로 마감 비교를 건너뛴다
+            # --push-pending 으로 보낸 노트는 앱 행이 보낸 날 생기므로 created 대신 yk_pushed 와 비교한다
+            fcd = pushed or parse_date(str(fm.get("created") or ""))
             if cd and fcd and abs((cd - fcd).days) > 1:
                 continue
             return relp
@@ -750,8 +890,9 @@ class Importer:
         self.habit_rows: list[dict] = []
         self.weekday_names = [f"{w}요일" for w in WEEKDAYS]
         self.adopt_fail: list[str] = []
+        self.project_folders: dict[str, Path] = {}    # project id → 프로젝트 폴더(자료/ 의 부모)
         for yk, paths in self.index.dups.items():
-            self.log.append(f"⚠️ yk_id 중복 {yk}: {' · '.join(paths)}")
+            self.log.append(f"  ⚠️ yk_id 중복 {yk}: {' · '.join(paths)}")   # 두 칸 들여쓰기 = stdout 에도 나온다
 
     # ── 출력 ────────────────────────────────────────────────────────────────
     def say(self, msg: str):
@@ -781,7 +922,16 @@ class Importer:
     def read(self, p: Path) -> str:
         return p.read_text(encoding="utf-8")
 
+    def inside(self, p: Path) -> Path:
+        """볼트 밖 경로는 쓰지 않는다(앱 데이터가 경로 조각으로 들어오므로 `..` 가 섞여도 탈출 불가)."""
+        rp = p.resolve()
+        vr = self.vault.resolve()
+        if rp != vr and vr not in rp.parents:
+            raise ValueError(f"볼트 밖 경로 거부: {p}")
+        return p
+
     def write(self, p: Path, text: str):
+        self.inside(p)
         relp = rel(p, self.vault)
         self.written.add(relp)
         if self.dry:
@@ -793,7 +943,8 @@ class Importer:
         return p.exists() or rel(p, self.vault) in self.planned_paths
 
     def unique_path(self, folder: Path, base: str, own_rel: str | None = None) -> Path:
-        """같은 폴더 충돌 → ' (2)', ' (3)'. own_rel 이 이미 그 경로면 그대로."""
+        """같은 폴더 충돌 → ' (2)', ' (3)'. own_rel 이 이미 그 경로면 그대로. base 는 파일명 바이트 상한 안으로 자른다."""
+        base = fname(base)
         cand = folder / f"{base}.md"
         n = 1
         while self.exists(cand) and rel(cand, self.vault) != own_rel:
@@ -808,11 +959,17 @@ class Importer:
                     status_hook=None) -> str:
         """노트 하나를 만들거나 갱신. 반환: 새로 | 갱신 | 건너뜀."""
         relp = rel(path, self.vault)
-        managed = json.dumps({"fm": {k: v for k, v in owned.items() if k not in ("yk_hash",)}, "blocks": [(n, c) for n, c, _ in blocks],
-                              "extra": hash_extra}, ensure_ascii=False, sort_keys=True, default=str)
-        new_hash = sha1(managed)
+
+        def managed_hash(owned_: dict, blocks_: list) -> str:
+            # 앱 태그도 해시에 넣는다 — daily_logs 엔 updated_at 이 없어 태그만 바뀐 행은 다른 신호가 없다
+            managed = json.dumps({"fm": {k: v for k, v in owned_.items() if k != "yk_hash"}, "blocks": [(n, c) for n, c, _ in blocks_],
+                                  "extra": hash_extra, "tags": list(app_tags or []), "tag_links": list(app_tag_links or [])},
+                                 ensure_ascii=False, sort_keys=True, default=str)
+            return sha1(managed)
+
+        new_hash = managed_hash(owned, blocks)
         meta = self.index.get_meta(yk_id, relp)
-        block_hashes = {n: sha1(c) for n, c, _ in blocks}
+        block_hashes = {n: block_hash(c) for n, c, _ in blocks}
 
         if not path.exists():
             fm = dict(owned)
@@ -822,6 +979,8 @@ class Importer:
                 fm["tags"] = list(app_tags)
             if app_tag_links is not None and app_tag_links:
                 fm["태그"] = list(app_tag_links)
+            if blocks:
+                fm["yk_blocks"] = yk_blocks_value(block_hashes)
             fm["yk_hash"] = new_hash
             fm = order_fm({k: v for k, v in fm.items() if v is not None})
             text = create_fn(fm, {n: c for n, c, _ in blocks})
@@ -839,12 +998,11 @@ class Importer:
             # 역방향 변경 감지(할 일): 볼트 값이 앞서면 owned/blocks 를 바꾼다
             owned, blocks, changed_hash = status_hook(fm, text, owned, blocks)
             if changed_hash:
-                managed = json.dumps({"fm": {k: v for k, v in owned.items() if k != "yk_hash"}, "blocks": [(n, c) for n, c, _ in blocks],
-                                      "extra": hash_extra}, ensure_ascii=False, sort_keys=True, default=str)
-                new_hash = sha1(managed)
-                block_hashes = {n: sha1(c) for n, c, _ in blocks}
+                new_hash = managed_hash(owned, blocks)
+                block_hashes = {n: block_hash(c) for n, c, _ in blocks}
         markers_ok = all(get_block(text, n) is not None for n, _, _ in blocks)
-        if str(fm.get("yk_hash") or "") == new_hash and markers_ok:   # 마커를 지웠으면 해시가 같아도 재삽입하러 내려간다
+        has_yk_blocks = (not blocks) or bool(fm.get("yk_blocks"))      # 블록 해시가 노트에 아직 없으면(업그레이드 전 노트) 한 번은 써 준다
+        if str(fm.get("yk_hash") or "") == new_hash and markers_ok and has_yk_blocks:   # 마커를 지웠으면 해시가 같아도 재삽입하러 내려간다
             self.counts.add(table, "건너뜀")
             self.last_path = path
             self.index.register(yk_id or fm.get("yk_id"), relp, fm)
@@ -895,7 +1053,7 @@ class Importer:
                 continue
             if k in owned:         # 소유 키인데 이번 값이 None → 제거
                 continue
-            if k in OWNED_KEYS and k in ("yk_deleted", "yk_missing", "yk_dirty", "yk_pending", "yk_key", "yk_area", "photos_pending"):
+            if k in OWNED_KEYS and k in ("yk_deleted", "yk_missing", "yk_dirty", "yk_pending", "yk_pushed", "yk_key", "yk_area", "photos_pending"):
                 merged[k] = v     # 상태 플래그는 owned 에 명시될 때만 바뀐다
                 continue
             if k in OWNED_KEYS and k not in owned and k not in ("tags", "태그", "up"):
@@ -915,18 +1073,24 @@ class Importer:
                 lines = body.split("\n")
                 for i, ln in enumerate(lines):
                     if ln.startswith("# "):
-                        lines[i] = re.sub(re.escape(old_title) + r"$", new_title, ln) if ln.endswith(old_title) else ln
+                        # 앱 제목을 정규식 치환 템플릿으로 쓰지 않는다(`\1`·`\U` 같은 역슬래시가 있으면 깨진다) — 접미사 교체
+                        lines[i] = ln[: len(ln) - len(old_title)] + new_title if ln.endswith(old_title) else ln
                         break
                 body = "\n".join(lines)
                 if self.args.rename_follow:
                     path, relp = self.rename_follow(path, new_title)
                 else:
                     self.log.append(f"  ✎ {relp}: 제목 '{old_title}' → '{new_title}' (파일명 유지, aliases 추가)")
+        if blocks:
+            merged["yk_blocks"] = yk_blocks_value(block_hashes)
+        else:
+            merged.pop("yk_blocks", None)
         merged["yk_hash"] = new_hash
         merged = order_fm(merged)
 
-        # (b) 블록 교체
-        prev_blocks = meta.get("blocks", {})
+        # (b) 블록 교체 — "직전에 가져온 블록" 해시는 캐시(.yk_index.json) → 노트 frontmatter yk_blocks 순으로 찾는다.
+        #     둘 다 없으면(처음 입양하는 노트) 보수적으로 "현재 텍스트 ≠ 새 내용 = 사용자 편집" 으로 본다.
+        prev_blocks = meta.get("blocks") or parse_yk_blocks(fm.get("yk_blocks")) or {}
         new_body = body
         for name, content, header in blocks:
             if name in free_text:
@@ -934,16 +1098,19 @@ class Importer:
                 if cur_block is not None:
                     user_text = strip_callouts(cur_block)
                     last_hash = prev_blocks.get(name)
-                    user_edited = (last_hash is not None and sha1(user_text) != last_hash and sha1(cur_block) != last_hash) or \
+                    user_edited = (last_hash is not None and not same_hash(last_hash, user_text) and not same_hash(last_hash, cur_block)) or \
                                   (last_hash is None and user_text.strip() != content.strip() and user_text.strip() != "")
-                    app_changed = (last_hash is None) or (sha1(content) != last_hash)
+                    app_changed = (last_hash is None) or not same_hash(last_hash, content)
                     if user_edited and app_changed and user_text.strip() != content.strip():
-                        content = cur_block.rstrip("\n") + "\n" + callout(content, self.today_s)
+                        # 이미 콜아웃이 있으면 쌓지 않고 최신 앱 텍스트로 바꾼다
+                        base = user_text if cur_block != user_text else cur_block
+                        content = base.rstrip("\n") + "\n" + callout(content, self.today_s)
                         self.conflicts += 1
-                        self.log.append(f"  ⚡ {relp}: `{name}` 블록을 Obsidian 에서 고쳤고 앱도 바뀜 → 사용자 텍스트 유지 + 콜아웃")
+                        hint = "" if last_hash is not None else " (직전 해시 없음 — 사용자 편집으로 간주, 확인 필요)"
+                        self.log.append(f"  ⚡ {relp}: `{name}` 블록을 Obsidian 에서 고쳤고 앱도 바뀜 → 사용자 텍스트 유지 + 콜아웃{hint}")
                     elif user_edited and not app_changed:
                         content = cur_block
-            new_body, _ = set_block(new_body, name, content, header, self.log, relp)
+            new_body, _ = set_block(new_body, name, content, header, self.log, relp, free=name in free_text)
         new_text = fm_dump(merged) + new_body
         if new_text != text or relp != rel(path, self.vault):
             self.write(path, new_text)
@@ -1152,21 +1319,27 @@ LIMIT 30
         self.log.append(f"  🧭 분야 노트 생성: 70_분야/{name}.md")
         return name
 
-    def project_folder_for(self, row: dict) -> Path:
+    def project_note_for(self, row: dict) -> tuple[Path, Path]:
+        """(프로젝트 노트 경로, 프로젝트 폴더). yk_id 로 찾은 노트는 사용자가 이름을 바꿨거나 옮겼어도 그 경로를 그대로 쓴다
+        (폴더 이름에서 다시 만들지 않는다 — 같은 yk_id 의 두 번째 노트가 생기는 것을 막는다)."""
         pid = str(row.get("id"))
+        root = self.vault / "40_프로젝트"
         existing = self.index.by_id.get(pid)
-        if existing and existing.startswith("40_프로젝트/"):
-            return (self.vault / existing).parent
-        name = E(row.get("name") or "새 프로젝트")
-        adopted = self.index.find_project(name)
-        if adopted:
-            return (self.vault / adopted).parent
-        folder = self.vault / "40_프로젝트" / name
+        if not existing or not existing.startswith("40_프로젝트/"):
+            name = E(row.get("name") or "새 프로젝트")
+            existing = self.index.find_project(name)
+        if existing:
+            path = self.vault / existing
+            # 폴더 노트가 아니라 40_프로젝트 바로 아래 평면 노트면, 자료/ 는 '40_프로젝트/<노트 이름>/자료' 로 간다
+            folder = path.parent if path.parent != root else root / path.stem
+            return path, folder
+        name = fname(row.get("name") or "새 프로젝트")
+        folder = root / name
         n = 1
-        while (folder / f"{folder.name}.md").exists() or rel(folder / f"{folder.name}.md", self.vault) in self.planned_paths:
+        while self.exists(folder / f"{folder.name}.md"):
             n += 1
-            folder = self.vault / "40_프로젝트" / f"{name} ({n})"
-        return folder
+            folder = root / f"{name} ({n})"
+        return folder / f"{folder.name}.md", folder
 
     def run_projects(self):
         if not self.src.present("projects"):
@@ -1181,9 +1354,9 @@ LIMIT 30
             pid = str(r.get("id"))
             try:
                 name = E(r.get("name") or "새 프로젝트")
-                folder = self.project_folder_for(r)
-                path = folder / f"{folder.name}.md"
+                path, folder = self.project_note_for(r)
                 self.project_paths[pid] = path
+                self.project_folders[pid] = folder
                 relp = rel(path, self.vault)
                 if r.get("deleted_at") and not path.exists():
                     self.counts.add("프로젝트", "건너뜀")
@@ -1199,10 +1372,24 @@ LIMIT 30
                     "goal": r.get("goal") or "", "next_action": r.get("next_action") or "", "created": iso_date(r.get("created_at"), self.tz),
                     "yk_id": pid, "yk_updated": r.get("updated_at") or r.get("created_at"), "yk_url": f"{self.app_url}/#/projects/{pid}",
                     "yk_deleted": iso_date(r.get("deleted_at"), self.tz) if r.get("deleted_at") else None, "yk_missing": None,
+                    "yk_dirty": None,
                 }
                 blocks: list[tuple[str, str, str | None]] = []
                 if sections is not None or checklist is not None:
-                    blocks.append(("checklist", self.render_checklist(pid, sections or [], checklist or [], sec_short, chk_short), "## 체크리스트"))
+                    chk = self.render_checklist(pid, sections or [], checklist or [], sec_short, chk_short)
+                    blocks.append(("checklist", chk, "## 체크리스트"))
+                    if path.exists():
+                        # 역방향 변경 감지: Obsidian 에서만 체크한 항목은 앱 승이지만 조용히 버리지 않는다 → 로그 + yk_dirty + YouKnow.md
+                        cur = get_block(self.read(path), "checklist")
+                        if cur is not None:
+                            rx = re.compile(r"^- \[(.)\] (.*?) %%yk:chk (\S+)%%")
+                            old = {m.group(3): (m.group(1), m.group(2)) for m in (rx.match(ln) for ln in cur.split("\n")) if m}
+                            new = {m.group(3): m.group(1) for m in (rx.match(ln) for ln in chk.split("\n")) if m}
+                            for cid, (box, label) in old.items():
+                                if cid in new and new[cid] != box:
+                                    owned["yk_dirty"] = True
+                                    self.dirty.append((relp, f"체크 '{label}' [{box}]", f"[{new[cid]}]"))
+                                    self.log.append(f"  ⚠️ {relp}: 체크리스트 '{label}' Obsidian [{box}] · 앱 [{new[cid]}] → 앱 승, yk_dirty")
                 legacy = (r.get("resources") or "").rstrip()
                 if legacy or (path.exists() and get_block(self.read(path), "resources_legacy") is not None):
                     blocks.append(("resources_legacy", legacy, "### 메모 (예전 자료)"))
@@ -1233,7 +1420,10 @@ LIMIT 30
                 for i, ln in enumerate(dl):
                     out.append(f"  - {'세부: ' if i == 0 else ''}{ln.strip()}")
             if c.get("photo_path"):
-                base = str(c["photo_path"]).split("/")[-1]
+                base = photo_base(c["photo_path"])
+                if not base:
+                    self.log.append(f"  ⚠️ 체크 항목 사진 경로를 파일명으로 쓸 수 없어 건너뜀: {c['photo_path']!r}")
+                    return
                 if self.src.has_binary and not self.args.no_photos:
                     self.download_photo(c["photo_path"], self.vault / "_Attachments" / "YouKnow" / "checklist" / base)
                 out.append(f"  ![[{base}]]")
@@ -1268,7 +1458,7 @@ LIMIT 30
 {F}dataview
 TABLE WITHOUT ID file.link AS "할 일", status AS "상태", priority_label AS "우선순위", due AS "마감"
 FROM "30_할일/목록"
-WHERE contains(string(project), this.file.name)
+WHERE project = link(this.file.name) AND !yk_deleted AND !yk_missing
 SORT status ASC, priority DESC
 {F}
 
@@ -1289,7 +1479,8 @@ const m = txt.match(new RegExp("%% yk:" + "checklist:start %%([^]*?)%% yk:" + "c
 const body = m ? m[1] : txt;
 const chk = body.split("\\n").filter(l => /^\\s*- \\[[ xX\\/-]\\]\\s*\\S/.test(l));
 const chkDone = chk.filter(l => /^\\s*- \\[[xX]\\]/.test(l)).length;
-const tasks = dv.pages('"30_할일/목록"').where(p => String(p.project ?? "").includes(cur.file.name));
+const linkName = v => !v ? "" : (v.path ? String(v.path) : String(v).replace(/^\\[\\[|\\]\\]$/g, "").split("|")[0]).split("/").pop().replace(/\\.md$/, "");
+const tasks = dv.pages('"30_할일/목록"').where(p => linkName(p.project) === cur.file.name && !p.yk_deleted && !p.yk_missing);
 const tAll = tasks.where(p => p.status !== "달성 못함").length;
 const tDone = tasks.where(p => p.status === "완료").length;
 const total = chk.length + tAll, done = chkDone + tDone;
@@ -1327,21 +1518,32 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                     self.counts.add("자료", "건너뜀")
                     self.log.append(f"  ⤼ 자료 '{r.get('title') or rid}': 딸린 프로젝트({pid})가 없어 건너뜀")
                     continue
-                pname = ppath.parent.name
+                pfolder = self.project_folders.get(pid, ppath.parent)
+                pname = pfolder.name
                 url = (r.get("url") or "").strip()
                 title = (r.get("title") or "").strip()
                 if not title:
                     title = auto_title(url)
-                if not title:
-                    memo_counter[pid] = memo_counter.get(pid, 0) + 1
-                    title = f"메모 {memo_counter[pid]}"
-                base = E(title)
                 existing = self.index.by_id.get(rid)
+                if not title:
+                    # '메모 N' 은 행마다 고정: 이미 번호가 붙은 노트는 그대로, 새 메모는 이 프로젝트 자료 폴더의 가장 큰 N 다음부터
+                    prev_title = str((self.index.notes.get(existing) or {}).get("title") or "") if existing else ""
+                    if re.fullmatch(r"메모 \d+", prev_title):
+                        title = prev_title
+                    else:
+                        if pid not in memo_counter:
+                            used = [int(m.group(1)) for rp, fm in self.index.notes.items()
+                                    if rp.startswith(rel(pfolder / "자료", self.vault) + "/") and fm.get("type") == "자료"
+                                    for m in [re.fullmatch(r"메모 (\d+)", str(fm.get("title") or Path(rp).stem))] if m]
+                            memo_counter[pid] = max(used, default=0)
+                        memo_counter[pid] += 1
+                        title = f"메모 {memo_counter[pid]}"
+                base = E(title)
                 if existing:
                     path = self.vault / existing
                 else:
                     adopted = self.index.find_resource(pname, base)
-                    path = self.vault / adopted if adopted else self.unique_path(ppath.parent / "자료", base)
+                    path = self.vault / adopted if adopted else self.unique_path(pfolder / "자료", base)
                 created = iso_date(r.get("created_at"), self.tz)
                 owned = {
                     "type": "자료", "title": title, "project": f"[[{pname}]]", "url": url or None, "kind": "링크" if url else "메모",
@@ -1378,8 +1580,8 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
 """
 
     # ── 4. tasks ─────────────────────────────────────────────────────────
-    def task_line(self, title: str, status: str, priority: int, start, due, short_id: str) -> str:
-        box = STATUS_BOX.get(status, " ")
+    def task_line(self, title: str, status: str, priority: int, start, due, short_id: str, done_date=None, deleted: bool = False) -> str:
+        box = "-" if deleted else STATUS_BOX.get(status, " ")      # 휴지통 행은 취소 `[-]` → Tasks `not done` 질의에서 빠진다
         parts = [f"- [{box}] {title}"]
         mark = PRIORITY_MARK.get(priority, "")
         if mark:
@@ -1388,8 +1590,8 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
             parts.append(f"🛫 {start}")
         if due:
             parts.append(f"📅 {due}")
-        if status == "완료" and due:
-            parts.append(f"✅ {due}")
+        if status == "완료" and (done_date or due):
+            parts.append(f"✅ {done_date or due}")      # 볼트에서 Tasks 로 체크한 실제 완료일이 있으면 그것, 없으면 마감일 근사
         parts.append(f"🆔 yk-{short_id}")
         return " ".join(parts)
 
@@ -1426,27 +1628,46 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                     else:
                         path = self.unique_path(folder, E(title))
                 pname = None
-                if r.get("project_id") and str(r["project_id"]) in self.project_paths:
-                    pname = self.project_paths[str(r["project_id"])].parent.name
+                if r.get("project_id") and str(r["project_id"]) in self.project_folders:
+                    pname = self.project_folders[str(r["project_id"])].name
                 elif r.get("project_id") and str(r["project_id"]) in self.projects_by_id:
                     pname = E(self.projects_by_id[str(r["project_id"])].get("name") or "새 프로젝트")
+                deleted = bool(r.get("deleted_at"))
                 owned = {
                     "type": "할일", "title": title, "status": status, "priority": priority, "priority_label": PRIORITY_LABELS.get(priority, "보통"),
-                    "start": start, "due": due, "daily": f"[[{start}]]" if start else None, "마감": f"[[{due}]]" if due else None,
+                    "start": start, "due": due, "done": None, "daily": f"[[{start}]]" if start else None, "마감": f"[[{due}]]" if due else None,
                     "project": f"[[{pname}]]" if pname else None, "created": created,
                     "yk_id": tid, "yk_updated": r.get("updated_at") or r.get("created_at"), "yk_url": f"{self.app_url}/#/tasks/{tid}",
-                    "yk_deleted": iso_date(r.get("deleted_at"), self.tz) if r.get("deleted_at") else None, "yk_missing": None,
-                    "yk_dirty": None, "yk_pending": None,
+                    "yk_deleted": iso_date(r.get("deleted_at"), self.tz) if deleted else None, "yk_missing": None,
+                    "yk_dirty": None, "yk_pending": None, "yk_pushed": None,
                 }
                 if r.get("project_id") and not pname and not self.src.present("projects"):
                     owned.pop("project")   # 이번 실행에 projects 테이블이 없으면 기존 링크 보존
-                line = self.task_line(title, status, priority, start, due, short[tid])
+                line = self.task_line(title, status, priority, start, due, short[tid], deleted=deleted)
                 blocks = [("task", line, "# "), ("note", (r.get("note") or "").rstrip(), "## 세부 메모")]
 
-                def hook(fm, text, owned, blocks, r=r, title=title, priority=priority, start=start, due=due, sid=short[tid], path=path):
+                def hook(fm, text, owned, blocks, r=r, title=title, priority=priority, start=start, due=due, sid=short[tid], path=path, deleted=deleted):
                     app_status = owned["status"]
                     vault_status = str(fm.get("status") or "")
                     cur = get_block(text, "task")
+                    changed = False
+                    owned = dict(owned)
+                    # 볼트에서 Tasks 플러그인으로 체크하면 `✅ YYYY-MM-DD`(실제 완료일)가 붙는다 — 앱엔 완료 시각이 없으니 볼트가 유일한 기록.
+                    # 마감일 근사치(✅ <due>)와 다를 때만 `done` 으로 간직해 이후 앱 승 재작성에서도 지키지 않는다.
+                    vault_done = None
+                    if cur is not None:
+                        md = re.search(r"✅ (\d{4}-\d{2}-\d{2})", cur)
+                        if md:
+                            vault_done = md.group(1)
+                    if not vault_done and DATE_RE.match(str(fm.get("done") or "")):
+                        vault_done = str(fm.get("done"))
+                    if vault_done and vault_done != (due or None):
+                        owned["done"] = vault_done
+                        changed = True
+                    if deleted:   # 휴지통 행: 역방향 감지 안 함(`[-]` 는 importer 가 쓴 것)
+                        if changed:
+                            blocks = [("task", self.task_line(title, app_status, priority, start, due, sid, owned.get("done"), deleted=True), "# "), blocks[1]]
+                        return owned, blocks, changed
                     if cur is not None:
                         m = re.search(r"^\s*- \[(.)\]", cur, re.M)
                         if m and BOX_STATUS.get(m.group(1)):
@@ -1454,14 +1675,15 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                             if STATUS_RANK.get(box_status, 0) > STATUS_RANK.get(vault_status, 0) or not vault_status:
                                 vault_status = box_status
                     if vault_status and vault_status != app_status and STATUS_RANK.get(vault_status, 0) >= 2 and STATUS_RANK.get(app_status, 0) < 2:
-                        owned = dict(owned)
                         owned["status"] = vault_status
                         owned["yk_dirty"] = True
-                        new_blocks = [("task", self.task_line(title, vault_status, priority, start, due, sid), "# "), blocks[1]]
+                        new_blocks = [("task", self.task_line(title, vault_status, priority, start, due, sid, owned.get("done")), "# "), blocks[1]]
                         self.dirty.append((rel(path, self.vault), vault_status, app_status))
                         self.log.append(f"  ⚠️ 할 일 '{title}': Obsidian '{vault_status}' · 앱 '{app_status}' → 볼트 승, yk_dirty")
                         return owned, new_blocks, True
-                    return owned, blocks, False
+                    if changed:
+                        blocks = [("task", self.task_line(title, app_status, priority, start, due, sid, owned.get("done")), "# "), blocks[1]]
+                    return owned, blocks, changed
 
                 self.upsert_note(table="할 일", path=path, yk_id=tid, owned=owned, blocks=blocks, free_text={"note"}, new_title=title,
                                  status_hook=hook,
@@ -1511,6 +1733,8 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
             lid = str(r.get("id"))
             try:
                 date_s = str(r.get("log_date") or "")
+                if not DATE_RE.match(date_s):
+                    raise ValueError(f"log_date 형식 오류: {date_s!r}")   # 날짜가 경로 조각이 되므로 YYYY-MM-DD 만 허용
                 tname, tdef = self.type_name_for(r.get("diary_type"))
                 kind = tdef.get("kind") or "general"
                 base = f"{date_s} 일기" if tname == "일반" else f"{date_s} {E(tname)}"
@@ -1532,9 +1756,14 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                 tags = [str(t) for t in as_list(r.get("tags"))]
                 metrics = r.get("metrics") if isinstance(r.get("metrics"), dict) else {}
                 photos = sorted(photos_by_log.get(lid, []), key=lambda p: (p.get("sort_order") if p.get("sort_order") is not None else 0, str(p.get("created_at") or "")))
-                bases = [str(p.get("photo_path") or "").split("/")[-1] for p in photos if p.get("photo_path")]
-                if not bases and r.get("photo_path"):
-                    bases = [str(r["photo_path"]).split("/")[-1]]
+                if not photos and r.get("photo_path"):
+                    # daily_photos 행 없이 대표 사진(photo_path)만 있는 옛 일기 — 같은 루프를 타게 가짜 행 하나로
+                    photos = [{"photo_path": r["photo_path"], "caption": "", "sort_order": 0}]
+                for p in photos:
+                    if p.get("photo_path") and not photo_base(p["photo_path"]):
+                        self.log.append(f"  ⚠️ 일기 {date_s} 사진 경로를 파일명으로 쓸 수 없어 건너뜀: {p['photo_path']!r}")
+                photos = [p for p in photos if photo_base(p.get("photo_path"))]
+                bases = [photo_base(p.get("photo_path")) for p in photos]
                 owned: dict = {"type": "일기", "title": title, "date": date_s, "daily": f"[[{date_s}]]", "diary_type": tname}
                 owned["종류"] = None if (tname == "일반" and self.args.no_link_general_type) else f"[[{tname}]]"
                 ms = MOOD_MAP.get(mood)
@@ -1566,9 +1795,7 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                 plines: list[str] = []
                 pending = 0
                 for i, p in enumerate(photos):
-                    b = str(p.get("photo_path") or "").split("/")[-1]
-                    if not b:
-                        continue
+                    b = photo_base(p.get("photo_path"))
                     cap = (p.get("caption") or "").strip()
                     if self.src.has_binary and not self.args.no_photos:
                         ok = self.download_photo(p["photo_path"], self.vault / "_Attachments" / "YouKnow" / "daily" / date_s / b)
@@ -1626,6 +1853,7 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
             if not signed:
                 raise RuntimeError("signedURL 없음")
             full = signed if signed.startswith("http") else f"{base}/storage/v1{signed}"
+            self.inside(target)
             req = urllib.request.Request(full, headers={"apikey": headers.get("apikey", "")})
             with urllib.request.urlopen(req, timeout=120) as resp:
                 length = resp.headers.get("Content-Length")
@@ -1798,14 +2026,14 @@ LIST FROM "10_오늘" WHERE contains(string(weekday), "{name}") SORT date DESC L
 {F}dataview
 TABLE WITHOUT ID file.link AS "할 일", priority_label AS "우선순위", due AS "마감", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due < date({date}) AND status != "완료" AND status != "달성 못함"
+WHERE due AND due < date({date}) AND status != "완료" AND status != "달성 못함" AND !yk_deleted AND !yk_missing
 SORT due ASC, priority DESC
 {F}
 ### 오늘 마감
 {F}dataview
 TABLE WITHOUT ID file.link AS "할 일", status AS "상태", priority_label AS "우선순위", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due = date({date})
+WHERE due = date({date}) AND !yk_deleted AND !yk_missing
 SORT status ASC, priority DESC
 {F}
 {F}tasks
@@ -1818,7 +2046,7 @@ short mode
 {F}dataview
 TABLE WITHOUT ID file.link AS "할 일", priority_label AS "우선순위", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due = date({date}) AND status = "달성 못함"
+WHERE due = date({date}) AND status = "달성 못함" AND !yk_deleted AND !yk_missing
 SORT priority DESC
 {F}
 - [ ] 
@@ -2146,7 +2374,7 @@ SORT yk_missing DESC
 {missing_note}
 
 ## 채택 실패
-`yk_pending: true` 인데 앱 행과 (제목, 마감, 생성일 ±1일)로 맞춰지지 않은 노트. `--push-pending` 으로 앱에 보낼 수 있어요.
+`yk_pending: true` 인데 앱 행과 (제목, 마감, 생성일 ±1일)로 맞춰지지 않은 노트. `yk_pushed` 가 없는 노트는 `--push-pending` 으로 앱에 한 번 보낼 수 있어요(보낸 뒤엔 제목 + yk_pushed ±1일로 채택).
 {adopt}
 """
         self.write(path, text)
@@ -2200,24 +2428,27 @@ SORT yk_missing DESC
         for relp in list(self.adopt_fail):
             fm = self.index.notes.get(relp) or {}
             title = str(fm.get("title") or Path(relp).stem)
+            if fm.get("yk_pushed") and not self.args.force_push:
+                self.log.append(f"  ⏭ /api/capture 이미 보냄 ({title}, yk_pushed: {fm.get('yk_pushed')}) — 다시 보내려면 --force-push")
+                continue
             text = title
             due = fm.get("due")
-            if due:
-                d = parse_date(str(due))
-                if d:
-                    text += f" {d.month}/{d.day}까지"
+            d = parse_date(str(due)) if due else None
+            if d and d >= self.today:
+                text += f" {d.month}/{d.day}까지"      # 지난 날짜는 앱 파서가 내년으로 넘기므로 보내지 않는다(채택은 제목+yk_pushed 로)
             pr = int(fm.get("priority") or 3)
             text += {5: " 긴급", 4: " 중요", 2: " 낮음", 1: " 언젠가"}.get(pr, "")
             proj = link_target(fm.get("project")) if fm.get("project") else ""
             if proj:
-                text += f" #{proj}"
+                text += f" [{proj}]" if len(proj) >= 2 else f" #{proj}"   # `[이름]` 꼴은 띄어쓰기가 있는 프로젝트 이름도 앱 파서가 통째로 읽는다(2자 이상)
             if self.dry:
                 self.log.append(f"  (dry) /api/capture ← {text}")
                 continue
             try:
-                body = json.dumps({"text": text, "key": key}).encode("utf-8")
+                body = json.dumps({"text": text, "key": key, "today": self.today_s}, ensure_ascii=False).encode("utf-8")
                 data, _ = http_json(f"{self.app_url}/api/capture", {"Content-Type": "application/json"}, method="POST", data=body)
                 self.log.append(f"  📤 /api/capture ← {text} → {(data or {}).get('message', 'ok')}")
+                self.mark_flag(relp, "yk_pushed", self.today_s)    # 한 번만 보낸다 — 다음 가져오기가 yk_pushed ±1일로 채택
             except Exception as ex:  # noqa: BLE001
                 self.log.append(f"  ❌ /api/capture 실패 ({title}): {ex}")
 
@@ -2390,7 +2621,8 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--no-link-general-type", action="store_true", help="일반 종류 일기에 종류: [[일반]] 링크를 넣지 않음")
     ap.add_argument("--vault", default=str(DEFAULT_VAULT), help="볼트 경로 (기본: 스크립트의 두 단계 위)")
     ap.add_argument("--csv", metavar="CSV", help="할 일 CSV 미리보기만 (쓰기 거부)")
-    ap.add_argument("--push-pending", action="store_true", help="채택 실패한 yk_pending 할 일을 /api/capture 로 보낸다")
+    ap.add_argument("--push-pending", action="store_true", help="채택 실패한 yk_pending 할 일을 /api/capture 로 한 번 보낸다(보낸 노트엔 yk_pushed 날짜가 남아 다시 보내지 않음)")
+    ap.add_argument("--force-push", action="store_true", help="--push-pending 에서 이미 yk_pushed 가 있는 노트도 다시 보낸다")
     ap.add_argument("--rename-follow", action="store_true", help="(옵트인) 제목이 바뀐 노트의 파일명도 바꾼다 — 링크는 Obsidian 에서 고쳐야 함")
     ap.add_argument("--verbose", action="store_true", help="예외 스택 출력")
     return ap

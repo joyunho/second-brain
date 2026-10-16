@@ -396,6 +396,329 @@ python3 -I "$SCRIPT" --csv "$WORK/tasks.csv" --vault "$VAULT" > "$WORK/run12.log
 grep -q '미리보기만' "$WORK/run12.log" && ok "csv: 쓰기 거부 안내" || fail "csv 안내 없음"
 hash_all > "$WORK/hc2.txt"; diff -q "$WORK/hc1.txt" "$WORK/hc2.txt" > /dev/null && ok "csv: 파일 변화 0" || fail "csv 가 파일을 바꿈"
 
+echo "▶ 회귀: 앱에서 태그만 바꾼 일기도 갱신된다 (해시에 태그 포함)"
+python3 -I - "$WORK/fixture8.json" "$WORK/fixture9.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["daily_logs"]:
+    if r["log_date"] == "2026-10-14":
+        r["tags"] = ["운동", "공부"]          # 추가만 (mood 등 다른 변경 없음)
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture9.json" > "$WORK/run19.log" 2>&1 || fail "19차 실행 실패"
+grep -qE '일기 새로 0 · 갱신 1' "$WORK/run19.log" && ok "태그만 추가 → 일기 갱신 1" || { fail "태그만 추가인데 갱신되지 않음"; tail -2 "$WORK/run19.log"; }
+assert_grep "$D1" 'tags: [운동, 회고, 공부]'; assert_grep "$D1" '태그: ["[[운동]]", "[[공부]]"]'
+python3 -I - "$WORK/fixture9.json" "$WORK/fixture10.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["daily_logs"]:
+    if r["log_date"] == "2026-10-14":
+        r["tags"] = ["공부"]                 # 앱에서 '운동' 제거
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture10.json" > "$WORK/run20.log" 2>&1 || fail "20차 실행 실패"
+grep -qE '일기 새로 0 · 갱신 1' "$WORK/run20.log" && ok "태그만 제거 → 일기 갱신 1" || fail "태그만 제거인데 갱신되지 않음"
+assert_grep "$D1" 'tags: [회고, 공부]'; assert_grep "$D1" '태그: ["[[공부]]"]'; assert_grep "$D1" 'energy: 4'
+run_import "$WORK/fixture10.json" > "$WORK/run20b.log" 2>&1 || fail "20b차 실행 실패"
+grep -qE '일기 새로 0 · 갱신 0' "$WORK/run20b.log" && ok "태그 변경 뒤 재실행은 전부 건너뜀" || fail "태그 변경 뒤 멱등성 깨짐"
+assert_regex "$D1" '^yk_blocks: \["body:[0-9a-f]{12}", "photos:[0-9a-f]{12}"\]$'
+
+echo "▶ 회귀: 인덱스 캐시가 사라져도 앱만 바꾼 본문은 충돌이 아니다 (yk_blocks)"
+rm -f "$IDX"
+python3 -I - "$WORK/fixture10.json" "$WORK/fixture11.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["daily_logs"]:
+    if r["log_date"] == "2026-10-14":
+        r["body"] = r["body"] + "\n- 캐시 없이 앱에서 더한 줄"
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture11.json" > "$WORK/run21.log" 2>&1 || fail "21차 실행 실패"
+grep -q '충돌 0' "$WORK/run21.log" && ok "캐시 없음 + 앱 변경 → 충돌 0" || { fail "캐시 없음에서 가짜 충돌"; grep '⚡' "$WORK/run21.log"; }
+assert_grep "$D1" '- 캐시 없이 앱에서 더한 줄'; assert_count "$D1" '📲 YouKnow에서 바뀐 내용' 0
+[ -f "$IDX" ] && ok "인덱스 캐시 재생성" || fail "인덱스 캐시 미생성"
+
+echo "▶ 회귀: 끝 마커만 지워진 블록은 시작 마커 자리에서 다시 닫는다 (중복 없음)"
+python3 -I - "$VAULT/$DAY15" <<'EOF'
+import sys
+p = sys.argv[1]; s = open(p, encoding="utf-8").read()
+s2 = s.replace("%% yk:plans:end %%\n", "", 1); assert s2 != s
+open(p, "w", encoding="utf-8").write(s2)
+EOF
+python3 -I - "$WORK/fixture11.json" "$WORK/fixture12.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["day_plans"]:
+    if str(r["id"]).startswith("c91e44f0"):
+        r["done"] = True
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture12.json" > "$WORK/run22.log" 2>&1 || fail "22차 실행 실패"
+assert_count "$DAY15" '%% yk:plans:start %%' 1; assert_count "$DAY15" '%% yk:plans:end %%' 1; assert_count "$DAY15" '%%yk:plan c91e44f0' 1
+assert_grep "$DAY15" '- ✅ 20:00–21:00 독서 %%yk:plan c91e44f0 호박%%'
+grep -q '`plans` 끝 마커가 사라져 시작 마커 자리에서 블록을 다시 닫음' "$WORK/run22.log" && ok "끝 마커 복구 로그" || fail "끝 마커 복구 로그 없음"
+
+echo "▶ 회귀: 블록 스칼라·중첩 맵·빈 값·주석 frontmatter 는 그대로 살아남는다"
+python3 -I - "$VAULT/$D1" <<'EOF'
+import sys
+p = sys.argv[1]; s = open(p, encoding="utf-8").read()
+s2 = s.replace("type: 일기\n", "type: 일기\nsummary: |\n  오늘은 가슴\n  내일은 등\nmeta:\n  nested: 1\nenergy2:\n# 내 주석\n", 1); assert s2 != s
+open(p, "w", encoding="utf-8").write(s2)
+EOF
+python3 -I - "$WORK/fixture12.json" "$WORK/fixture13.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["daily_logs"]:
+    if r["log_date"] == "2026-10-14":
+        r["body"] = r["body"] + "\n- 앱 줄 2"
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture13.json" > "$WORK/run23.log" 2>&1 || fail "23차 실행 실패"
+python3 -I - "$VAULT/$D1" <<'EOF' && ok "사용자 YAML 원문 보존 + yk_hash 뒤에 들여쓴 줄 없음" || fail "사용자 YAML 손상"
+import re, sys
+s = open(sys.argv[1], encoding="utf-8").read()
+fm = s.split("---\n")[1]
+assert "summary: |\n  오늘은 가슴\n  내일은 등\n" in fm, fm
+assert "meta:\n  nested: 1\n" in fm, fm
+assert "\nenergy2:\n" in fm and "\n# 내 주석\n" in fm, fm
+assert 'summary: "|"' not in fm
+assert not re.search(r"^yk_hash: \S+\n[ \t]+\S", fm, re.M), fm
+EOF
+assert_grep "$D1" '- 앱 줄 2'
+
+echo "▶ 회귀: 따옴표가 든 인라인 리스트 항목은 다시 읽어도 두 항목이다"
+python3 -I - "$SCRIPT" <<'EOF' && ok "_split_inline_list 이스케이프" || fail "_split_inline_list 이스케이프"
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location("imp", sys.argv[1]); m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+v = m.yaml_value(['12" 모니터 구매', '케이블'])
+fm, _ = m.fm_load("---\naliases: " + v + "\n---\n")
+assert fm["aliases"] == ['12" 모니터 구매', '케이블'], fm
+assert m.yaml_scalar("1e5") == '"1e5"' and m.yaml_scalar("1_000") == '"1_000"' and m.yaml_scalar("0x1F") == '"0x1F"' and m.yaml_scalar("2026-10-16") == "2026-10-16", "YAML 숫자꼴 따옴표"
+EOF
+
+echo "▶ 회귀: 빈 frontmatter(---/---) 노트에 두 번째 frontmatter 를 덧붙이지 않는다"
+printf -- '---\n---\n# 내 메모\n' > "$VAULT/10_오늘/2026/10/2026-10-05.md"
+run_import "$WORK/fixture13.json" > "$WORK/run24.log" 2>&1 || fail "24차 실행 실패"
+assert_count "10_오늘/2026/10/2026-10-05.md" '---' 2; assert_grep "10_오늘/2026/10/2026-10-05.md" '# 내 메모'; assert_grep "10_오늘/2026/10/2026-10-05.md" 'type: 오늘'
+
+echo "▶ 회귀: 제목 없는 자료의 '메모 N' 은 행마다 고정"
+python3 -I - "$WORK/fixture13.json" "$WORK/fixture14.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+pid = [r for r in d["projects"] if r["name"] == "유튜브 채널 개편"][0]["id"]
+d["project_resources"].append({"id": "e2ff0033-4444-4555-8666-777788889999", "owner_id": d["settings"]["user_id"], "project_id": pid, "title": "", "url": "",
+                               "body": "두 번째 메모", "sort_order": 5, "created_at": "2026-10-04T01:00:00.000Z", "updated_at": "2026-10-04T01:00:00.000Z"})
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture14.json" > "$WORK/run25.log" 2>&1 || fail "25차 실행 실패"
+R3="40_프로젝트/유튜브 채널 개편/자료/메모 2.md"; assert_file "$R3"; assert_grep "$R3" 'title: 메모 2'
+python3 -I - "$WORK/fixture14.json" "$WORK/fixture15.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+d["project_resources"] = [r for r in d["project_resources"] if not str(r["id"]).startswith("d1ff0022")]   # 첫 메모 하드 삭제
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture15.json" > "$WORK/run26.log" 2>&1 || fail "26차 실행 실패"
+assert_grep "$R3" 'title: 메모 2'; assert_nogrep "$R3" 'aliases'
+grep -q "'메모 2' → '메모 1'" "$WORK/run26.log" && fail "메모 번호가 밀림" || ok "앞 메모가 사라져도 뒤 메모 번호 유지"
+
+echo "▶ 회귀: Tasks 로 체크한 실제 완료일(✅)은 마감일로 바뀌지 않는다"
+python3 -I - "$VAULT/$T2" <<'EOF'
+import sys
+p = sys.argv[1]; s = open(p, encoding="utf-8").read()
+s2 = s.replace("📅 2026-10-12 ✅ 2026-10-12 🆔 yk-8e2d4f61", "📅 2026-10-12 🆔 yk-8e2d4f61 ✅ 2026-10-11"); assert s2 != s
+open(p, "w", encoding="utf-8").write(s2)
+EOF
+run_import "$WORK/fixture15.json" > "$WORK/run27.log" 2>&1 || fail "27차 실행 실패"
+assert_grep "$T2" '- [x] 치과 예약 🔺 🛫 2026-10-10 📅 2026-10-12 ✅ 2026-10-11 🆔 yk-8e2d4f61'; assert_grep "$T2" 'done: 2026-10-11'; assert_nogrep "$T2" '✅ 2026-10-12'
+run_import "$WORK/fixture15.json" > "$WORK/run27b.log" 2>&1 || fail "27b차 실행 실패"
+assert_grep "$T2" '✅ 2026-10-11'; grep -qE '할 일 새로 0 · 갱신 0' "$WORK/run27b.log" && ok "완료일 보존 뒤 멱등" || fail "완료일 보존 뒤 멱등성 깨짐"
+# 볼트에서 완료 + 날짜까지 붙인 할 일(앱은 진행 전) → 볼트 승 + 날짜 유지
+python3 -I - "$VAULT/$T4" <<'EOF'
+import sys
+p = sys.argv[1]; s = open(p, encoding="utf-8").read()
+# 사용자가 '달성 못함' 을 되돌려 진행 중으로 두었다가 Tasks 로 체크(✅ 날짜가 붙음)한 상황
+s2 = s.replace("status: 달성 못함", "status: 진행 중").replace("- [-] 영어 단어 100개 🔽 🛫 2026-10-08 📅 2026-10-09 🆔 yk-d4e5f6a7", "- [x] 영어 단어 100개 🔽 🛫 2026-10-08 📅 2026-10-09 🆔 yk-d4e5f6a7 ✅ 2026-10-16"); assert s2 != s
+open(p, "w", encoding="utf-8").write(s2)
+EOF
+python3 -I - "$WORK/fixture15.json" "$WORK/fixture16.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["tasks"]:
+    if r["title"] == "영어 단어 100개":
+        r["status"] = "진행 중"
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture16.json" > "$WORK/run28.log" 2>&1 || fail "28차 실행 실패"
+assert_grep "$T4" 'status: 완료'; assert_grep "$T4" 'yk_dirty: true'; assert_grep "$T4" '📅 2026-10-09 ✅ 2026-10-16 🆔 yk-d4e5f6a7'; assert_grep "$T4" 'done: 2026-10-16'
+
+echo "▶ 회귀: Obsidian 에서만 체크한 프로젝트 체크 항목 → 앱 승이지만 로그 + yk_dirty"
+python3 -I - "$VAULT/$P1" <<'EOF'
+import sys
+p = sys.argv[1]; s = open(p, encoding="utf-8").read()
+s2 = s.replace("- [ ] 콘텐츠 캘린더 %%yk:chk b2c3d4e5%%", "- [x] 콘텐츠 캘린더 %%yk:chk b2c3d4e5%%"); assert s2 != s
+open(p, "w", encoding="utf-8").write(s2)
+EOF
+python3 -I - "$WORK/fixture16.json" "$WORK/fixture17.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["project_checklist"]:
+    if r["text"] == "인트로 영상":
+        r["text"] = "인트로 영상 v2"
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture17.json" > "$WORK/run29.log" 2>&1 || fail "29차 실행 실패"
+assert_grep "$P1" '- [ ] 콘텐츠 캘린더 %%yk:chk b2c3d4e5%%'; assert_grep "$P1" 'yk_dirty: true'; assert_grep "$P1" '- [ ] 인트로 영상 v2'
+grep -q "체크리스트 '콘텐츠 캘린더' Obsidian \[x\] · 앱 \[ \] → 앱 승, yk_dirty" "$WORK/run29.log" && ok "체크리스트 역방향 로그" || fail "체크리스트 역방향 로그 없음"
+assert_grep "$YK" "체크 '콘텐츠 캘린더' [x]"
+run_import "$WORK/fixture17.json" > "$WORK/run29b.log" 2>&1 || fail "29b차 실행 실패"
+assert_nogrep "$P1" 'yk_dirty'   # 다음 실행에서 차이가 없으면 플래그 해제
+
+echo "▶ 회귀: daily_photos 없이 photo_path 만 있는 일기도 사진 줄이 생긴다"
+python3 -I - "$WORK/fixture17.json" "$WORK/fixture18.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+d["daily_photos"] = []
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture18.json" > "$WORK/run30.log" 2>&1 || fail "30차 실행 실패"
+assert_grep "$D2" 'photos: 1'; assert_grep "$D2" 'cover: "[[9f0e1a2b-IMG_0012.jpg]]"'; assert_grep "$D2" '- 📷 9f0e1a2b-IMG_0012.jpg (앱에서만 보임)'
+
+echo "▶ 회귀: 사용자가 프로젝트 노트 이름을 바꿔도 같은 yk_id 노트가 둘 생기지 않는다"
+mv "$VAULT/$P1" "$VAULT/40_프로젝트/유튜브 채널 개편/README.md"
+mv "$VAULT/$P2" "$VAULT/40_프로젝트/방 정리.md" && rmdir "$VAULT/40_프로젝트/방 정리" 2>/dev/null
+run_import "$WORK/fixture18.json" > "$WORK/run31.log" 2>&1 || fail "31차 실행 실패"
+grep -qE '프로젝트 새로 0' "$WORK/run31.log" && ok "이름 바꾼 프로젝트 → 새로 0" || { fail "이름 바꾼 프로젝트가 새로 생김"; grep 프로젝트 "$WORK/run31.log" | tail -1; }
+assert_nofile "$P1"; assert_file "40_프로젝트/유튜브 채널 개편/README.md"; assert_nofile "40_프로젝트/40_프로젝트.md"; assert_file "40_프로젝트/방 정리.md"
+assert_grep "40_프로젝트/유튜브 채널 개편/README.md" 'yk_id: e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001'
+assert_grep "$R1" 'project: "[[유튜브 채널 개편]]"'; assert_grep "$T1" 'project: "[[유튜브 채널 개편]]"'
+DUP=$(cd "$VAULT" && grep -rhoE '^yk_id: .+$' --include='*.md' --exclude-dir=_System . | sort | uniq -d | wc -l | tr -d ' ')
+[ "$DUP" = "0" ] && ok "yk_id 중복 0 (이름 변경 뒤)" || fail "yk_id 중복 $DUP"
+P1="40_프로젝트/유튜브 채널 개편/README.md"; P2="40_프로젝트/방 정리.md"
+
+echo "▶ 회귀: 휴지통 행은 [-] 줄 + yk_deleted, 역방향 감지 없음"
+python3 -I - "$WORK/fixture18.json" "$WORK/fixture19.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+for r in d["tasks"]:
+    if r["title"] == "영상 편집":
+        r["deleted_at"] = "2026-10-16T01:00:00.000Z"
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture19.json" > "$WORK/run32.log" 2>&1 || fail "32차 실행 실패"
+assert_grep "$T1" 'yk_deleted: 2026-10-16'; assert_grep "$T1" '- [-] 영상 편집 ⏫ 🛫 2026-10-01 📅 2026-10-17 🆔 yk-3f9a1c2e'; assert_nogrep "$T1" 'yk_dirty'
+run_import "$WORK/fixture19.json" > "$WORK/run32b.log" 2>&1 || fail "32b차 실행 실패"
+assert_nogrep "$T1" 'yk_dirty'; grep -qE '할 일 새로 0 · 갱신 0' "$WORK/run32b.log" && ok "휴지통 행 멱등" || fail "휴지통 행 멱등성 깨짐"
+
+echo "▶ 회귀: 위험한 제목/경로 — 점 시작 · 역슬래시 · 너무 긴 제목 · 숫자꼴 · 경로 탈출"
+python3 -I - "$WORK/fixture19.json" "$WORK/fixture20.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+uid = d["settings"]["user_id"]
+def task(i, title):
+    return {"id": f"{i}0000000-aaaa-4bbb-8ccc-{i}{i}{i}{i}{i}{i}{i}{i}{i}{i}{i}{i}", "owner_id": uid, "title": title, "priority": 3, "start_date": "2026-10-16", "due_date": None,
+            "status": "진행 전", "project_id": None, "note": "", "deleted_at": None, "created_at": f"2026-10-16T0{i}:00:00.000Z"}
+d["tasks"] += [task(1, ".env 파일 정리"), task(2, "가" * 90), task(3, "1e5")]
+for r in d["tasks"]:
+    if r["title"] == "영어 단어 100개":
+        r["title"] = "LaTeX \\alpha 공부 \\1"
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture20.json" > "$WORK/run33.log" 2>&1 && ok "위험한 제목 실행 종료 코드 0" || { fail "위험한 제목 실행 실패"; grep '❌' "$WORK/run33.log"; }
+assert_file "30_할일/목록/env 파일 정리.md"; [ -e "$VAULT/30_할일/목록/.env 파일 정리.md" ] && fail "점으로 시작하는 파일 생성" || ok "점 시작 파일 없음"
+LONG=$(cd "$VAULT/30_할일/목록" && ls | grep -c '^가가가')
+[ "$LONG" = "1" ] && ok "긴 제목 → 잘린 파일 1개" || fail "긴 제목 파일 $LONG 개"
+assert_grep "30_할일/목록/1e5.md" 'title: "1e5"'
+assert_grep "$T4" 'title: "LaTeX \\alpha 공부 \\1"'; assert_grep "$T4" '# ✅ LaTeX \alpha 공부 \1'
+run_import "$WORK/fixture20.json" > "$WORK/run33b.log" 2>&1 || fail "33b차 실행 실패"
+grep -qE '할 일 새로 0 · 갱신 0' "$WORK/run33b.log" && ok "위험한 제목 멱등(점 시작 노트 재생성 없음)" || { fail "위험한 제목 멱등성 깨짐"; grep '할 일' "$WORK/run33b.log" | tail -1; }
+python3 -I - "$WORK/fixture20.json" "$WORK/fixture21.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+uid = d["settings"]["user_id"]
+d["daily_logs"].append({"id": "bad0bad0-0000-4000-8000-000000000001", "owner_id": uid, "title": "탈출", "log_date": "../../탈출", "mood": "", "tags": [], "body": "x",
+                        "photo_path": None, "diary_type": "general", "metrics": {}, "deleted_at": None, "created_at": "2026-10-16T05:00:00.000Z"})
+d["projects"].append({"id": "bad0bad0-0000-4000-8000-000000000002", "owner_id": uid, "name": "..", "status": "진행 중", "area": "개인", "goal": "", "next_action": "",
+                      "start_date": None, "due_date": None, "resources": "", "deleted_at": None, "created_at": "2026-10-16T05:00:00.000Z", "updated_at": "2026-10-16T05:00:00.000Z"})
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+if run_import "$WORK/fixture21.json" > "$WORK/run34.log" 2>&1; then fail "경로 탈출 행이 실패로 집계되지 않음"; else ok "경로 탈출 행 → 실패(종료 코드 1)"; fi
+grep -q 'log_date 형식 오류' "$WORK/run34.log" && ok "log_date 검증 로그" || fail "log_date 검증 로그 없음"
+[ -e "$WORK/탈출 일기.md" ] || [ -e "$VAULT/../탈출 일기.md" ] && fail "볼트 밖에 파일이 생김" || ok "볼트 밖 파일 없음"
+assert_nofile "...md"; assert_file "40_프로젝트/이름 없음/이름 없음.md"
+
+echo "▶ 회귀: --push-pending 은 한 번만 보내고(yk_pushed) 다음 가져오기가 채택한다"
+cat > "$VAULT/30_할일/목록/회의 준비.md" <<'EOF'
+---
+type: 할일
+title: 회의 준비
+status: 진행 전
+priority: 4
+priority_label: 중요
+start: 2026-10-10
+due: 2026-10-20
+daily: "[[2026-10-10]]"
+마감: "[[2026-10-20]]"
+project: "[[유튜브 채널 개편]]"
+created: 2026-10-10
+yk_pending: true
+---
+# ✅ 회의 준비
+%% yk:task:start %%
+- [ ] 회의 준비 ⏫ 🛫 2026-10-10 📅 2026-10-20
+%% yk:task:end %%
+
+## 세부 메모
+%% yk:note:start %%
+%% yk:note:end %%
+EOF
+PORT=18877
+python3 -I - "$PORT" "$WORK/posts.log" <<'EOF' &
+import sys, json
+from http.server import BaseHTTPRequestHandler, HTTPServer
+port, logp = int(sys.argv[1]), sys.argv[2]
+class H(BaseHTTPRequestHandler):
+    def do_POST(self):
+        n = int(self.headers.get("Content-Length") or 0)
+        body = self.rfile.read(n).decode("utf-8")
+        open(logp, "a", encoding="utf-8").write(body + "\n")
+        out = json.dumps({"message": "ok"}).encode("utf-8")
+        self.send_response(200); self.send_header("Content-Type", "application/json"); self.send_header("Content-Length", str(len(out))); self.end_headers(); self.wfile.write(out)
+    def log_message(self, *a): pass
+HTTPServer(("127.0.0.1", port), H).serve_forever()
+EOF
+STUB=$!
+sleep 1
+YK_APP_URL="http://127.0.0.1:$PORT" YK_WIDGET_KEY=sekrit run_import "$WORK/fixture20.json" --push-pending > "$WORK/run35.log" 2>&1 || fail "35차 실행 실패"
+YK_APP_URL="http://127.0.0.1:$PORT" YK_WIDGET_KEY=sekrit run_import "$WORK/fixture20.json" --push-pending > "$WORK/run36.log" 2>&1 || fail "36차 실행 실패"
+kill "$STUB" 2>/dev/null
+python3 -I - "$WORK/posts.log" <<'EOF' && ok "두 번 실행해도 POST 1회 · 본문 = 제목 M/D까지 우선순위 [프로젝트] + today + key" || { fail "POST 횟수/본문"; cat "$WORK/posts.log"; }
+import json, sys
+posts = [json.loads(l) for l in open(sys.argv[1], encoding="utf-8") if l.strip()]
+assert len(posts) == 1, posts
+assert posts[0] == {"text": "회의 준비 10/20까지 중요 [유튜브 채널 개편]", "key": "sekrit", "today": "2026-10-16"}, posts[0]
+EOF
+assert_grep "30_할일/목록/회의 준비.md" 'yk_pushed: 2026-10-16'; assert_grep "30_할일/목록/회의 준비.md" 'yk_pending: true'
+grep -q '이미 보냄' "$WORK/run36.log" && ok "재전송 건너뜀 로그" || fail "재전송 건너뜀 로그 없음"
+python3 -I - "$WORK/fixture20.json" "$WORK/fixture22.json" <<'EOF'
+import json, sys
+d = json.load(open(sys.argv[1], encoding="utf-8"))
+pid = [r for r in d["projects"] if r["name"] == "유튜브 채널 개편"][0]["id"]
+d["tasks"].append({"id": "feed0000-1111-4222-8333-444455556666", "owner_id": d["settings"]["user_id"], "title": "회의 준비", "priority": 4,
+                   "start_date": "2026-10-16", "due_date": "2026-10-20", "status": "진행 전", "project_id": pid, "note": "",
+                   "deleted_at": None, "created_at": "2026-10-16T05:00:00.000Z"})   # 앱이 보낸 날 만든 행 (노트 created 와는 6일 차)
+json.dump(d, open(sys.argv[2], "w", encoding="utf-8"), ensure_ascii=False, indent=1)
+EOF
+run_import "$WORK/fixture22.json" > "$WORK/run37.log" 2>&1 || fail "37차 실행 실패"
+assert_grep "30_할일/목록/회의 준비.md" 'yk_id: feed0000-1111-4222-8333-444455556666'; assert_nogrep "30_할일/목록/회의 준비.md" 'yk_pending'; assert_nogrep "30_할일/목록/회의 준비.md" 'yk_pushed'
+assert_nofile "30_할일/목록/회의 준비 (2).md"
+
+echo "▶ 회귀: 일간 스켈레톤 '지난 마감' 은 마감 없는 할 일을 빼고, 템플릿과 같은 질의다"
+assert_grep "$DAY01" 'WHERE due AND due < date(2026-10-01) AND status != "완료" AND status != "달성 못함" AND !yk_deleted AND !yk_missing'
+diff <(grep -E '^(FROM|WHERE|SORT|TABLE|LIST|not done|due on|hide backlink|short mode)' "$VAULT_SRC/_System/Templates/tpl-daily.md" | sed 's/\${date}/D/g') \
+     <(grep -E '^(FROM|WHERE|SORT|TABLE|LIST|not done|due on|hide backlink|short mode)' "$VAULT/$DAY01" | sed 's/2026-10-01/D/g') > /dev/null \
+  && ok "tpl-daily ↔ importer 스켈레톤 Dataview 질의 동일" || fail "tpl-daily 와 importer 스켈레톤 질의가 다름"
+
 echo
 echo "결과: 통과 $PASS · 실패 $FAIL"
 [ "$FAIL" -eq 0 ] || { echo "임시 볼트 보존하려면 YK_TEST_KEEP=1 로 다시 실행: $WORK"; exit 1; }

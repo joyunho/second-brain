@@ -48,7 +48,7 @@ area: <% area ? `"[[${area}]]"` : "" %>
 
 ## 이 책에서 나온 영구 노트 (→ [[💎 영구 노트]] 로 독립시키기 · 영구 노트의 `source` 가 이 노트를 가리킵니다)
 ```dataview
-LIST FROM "90_영구" WHERE contains(string(source), this.file.name)
+LIST FROM "90_영구" WHERE contains(source, link(this.file.name))
 ```
 - 
 

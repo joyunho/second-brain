@@ -11,7 +11,7 @@ if (!DOW.includes(name)) {
     let dir = tp.file.folder(true); if (dir === "/") dir = "";
     if (app.vault.getAbstractFileByPath(`${dir ? dir + "/" : ""}${picked}.md`)) {   // 요일 노트는 7개 고정 — 이미 있으면 " (2)"로 두고 알림
       let n = 2; while (app.vault.getAbstractFileByPath(`${dir ? dir + "/" : ""}${picked} (${n}).md`)) n += 1;
-      label = `${picked} (${n})`; new Notice(`${picked} 일과 노트가 이미 있어요. 이 노트는 "${label}"로 둡니다 — 기존 노트에 합쳐 주세요.`);
+      label = `${picked} (${n})`; new tp.obsidian.Notice(`${picked} 일과 노트가 이미 있어요. 이 노트는 "${label}"로 둡니다 — 기존 노트에 합쳐 주세요.`);
     }
     await tp.file.rename(label);
   }

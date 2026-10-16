@@ -120,9 +120,9 @@ GoodNotes › 설정 › 자동 백업(PDF) → 클라우드 폴더 → `python3
 ### 3-6. iOS 단축어 "뇌에 추가" (Advanced URI)
 YouKnow를 거치지 않고 옵시디언에 바로 넣는 길. Advanced URI 플러그인을 설치하고 단축어에서 아래 URL을 엽니다:
 ```
-obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&data={{텍스트}}&mode=new
+obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}
 ```
-파일명이 `⚡`로 시작하면 `tpl-inbox`가 메뉴 없이 본문을 `capture.js`로 바로 해석·분배합니다. 공유 시트의 URL은 12번(자료) 분기로 보내면 됩니다.
+`data`는 반드시 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>`(위처럼 URL 인코딩)로 시작하고 그 다음 줄에 텍스트가 옵니다 — Templater의 폴더 템플릿은 **빈 파일**에만 적용되고, Advanced URI는 파일을 텍스트와 함께 만들기 때문에 이 줄이 없으면 `tpl-inbox`가 아예 실행되지 않고 ⚡ 노트가 Inbox에 날것으로 남습니다. 단축어에서 `{{텍스트}}`는 "URL 인코딩" 동작을 거쳐 넣으세요(`#프로젝트`·`9:30`·`&`가 살아남게). 파일명이 `⚡`로 시작하면 `tpl-inbox`가 메뉴 없이 본문을 `capture.js`로 바로 해석·분배합니다(명령 줄은 본문에서 제외). 공유 시트의 URL은 12번(자료) 분기로 보내면 됩니다.
 
 ---
 
@@ -170,6 +170,9 @@ obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&
 | `yk_missing: <날짜>` | 앱 테이블에서 완전히 사라짐 |
 | `yk_dirty: true` | 볼트 쪽 변경이 앱에 반영되지 않음 → 🔌 연동의 "YouKnow에 반영 필요" |
 | `yk_pending: true` | 볼트에서 먼저 만든 노트, 앱 id를 기다리는 중 |
+| `yk_pushed: <날짜>` | `--push-pending`으로 앱에 보낸 날 — 다시 보내지 않고, 채택은 title + 이 날짜 ±1일 |
+| `yk_blocks: ["body:<sha1 12자>", …]` | 블록별 "직전 가져온 내용" 해시 — 캐시 없이도(새 클론) 가짜 충돌 방지 |
+| `done: <날짜>` | 할 일을 옵시디언(Tasks)에서 체크해 붙은 실제 완료일(마감일과 다를 때만) |
 
 ### 4-5. 관리 블록 마커 — 그 사이만 importer가 다시 씁니다
 ```
@@ -178,7 +181,7 @@ obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&
 %% yk:plans:end %%
 ```
 블록 이름: 일간 `plans` `habits` · 일기 `body` `photos` · 할 일 `task` `note` · 프로젝트 `checklist` `resources_legacy` · 자료 `body` · 요일 `routines`. 줄 끝 id 마커 `%%yk:plan <id8> <색>%%` `%%yk:chk <id8>%%` `%%yk:sec <id8>%%` `%%yk:rt <id8>%%`(id8 = uuid 앞 8자)는 그 줄이 앱 행이라는 표시입니다. 읽기 모드에서는 보이지 않습니다.
-**규칙: 마커 사이는 고치지 마세요**(다음 가져오기에 덮입니다). 마커 **밖**(`## 📝 메모`, `## 생각 · 연결`, `## 연결`, 마커 없는 계획 줄)은 전부 내 소유라 importer가 손대지 않습니다. 블록 안을 꼭 고쳐야 하면 고쳐도 됩니다 — 앱 쪽도 바뀌었을 때만 `> [!note] 📲 YouKnow에서 바뀐 내용` 콜아웃이 뒤에 붙고 어느 쪽도 버려지지 않습니다.
+**규칙: 마커 사이는 고치지 마세요**(다음 가져오기에 덮입니다). 마커 **밖**(`## 📝 메모`, `## 생각 · 연결`, `## 연결`, 마커 없는 계획 줄)은 전부 내 소유라 importer가 손대지 않습니다. 자유 텍스트 블록(일기 `body` · 할 일 `note` · 자료 `body` · 예전 자료)은 꼭 고쳐야 하면 고쳐도 됩니다 — 앱 쪽도 바뀌었을 때만 `> [!note] 📲 YouKnow에서 바뀐 내용` 콜아웃이 뒤에 붙고(이미 있으면 최신 것으로 교체) 어느 쪽도 버려지지 않습니다. 직전에 가져온 블록의 해시는 frontmatter `yk_blocks`에도 남아 캐시(`.yk_index.json`)가 없어도(새 클론·다른 기기) 가짜 충돌이 생기지 않습니다. 체크리스트·하루 계획·습관 블록은 **앱이 주인**이라 앱 값으로 덮이지만, Obsidian에서만 체크한 항목은 로그 + `yk_dirty` + `98_연동/YouKnow.md` "반영 필요" 표에 남깁니다.
 하루 계획·습관 체크는 체크박스가 아니라 **이모지 불릿**(✅ 완료 · ❌ 달성 못함 · ⬜ 미완)입니다 — Tasks 플러그인이 할 일로 긁어가지 않게 하기 위해서. 체크박스는 진짜 할 일(`- [ ] 제목 ⏫ 🛫 시작 📅 마감 🆔 yk-<id8>`; 진행 중 `[/]`, 완료 `[x]`, 달성 못함 `[-]`)과 프로젝트 체크리스트에만 씁니다.
 
 ---
@@ -230,7 +233,7 @@ bash _System/Graph/graph_preset.sh knowledge    # 또는 full
    | 4 | **Auto Note Mover** | 본문 태그 → 폴더 | 규칙 10개(`#책 #글 #일기 #영구 #프로젝트 #사람 #분야 #할일 #습관 #굿노트`), 제외 `_System _Attachments 10_오늘 20_일정` |
    | 5 | **Periodic Notes** + **Calendar** | 일간/주간 생성 UI | 일간 폴더 `10_오늘`, 형식 `YYYY/MM/YYYY-MM-DD`; 주간 `10_오늘/Weekly`, `GGGG-[W]WW` |
    | 6 | **ICS** | Google Calendar → 일간 `### 캘린더` | 비공개 iCal URL 등록 (3-4) |
-   | 7 | **Advanced URI** (`obsidian-advanced-uri`) | 단축어 "뇌에 추가" | 3-6의 URL이 열리는지 |
+   | 7 | **Advanced URI** (`obsidian-advanced-uri`) | 단축어 "뇌에 추가" | 3-6의 URL로 보낸 ⚡ 노트가 Inbox에 남지 않고 일간 노트/할 일로 나뉘는지(그냥 열리기만 하면 `data`의 Templater 명령 줄 누락) |
    | 8 | **Obsidian Git** *(데스크톱)* | 자동 커밋/푸시 | 10분 간격. 가져오기 작업 중엔 잠시 끄기 |
    | 9 | **QuickAdd** *(선택)* | 단축키 한 줄 캡처 | 📋 Task Inbox로 Capture |
 3. **CSS 스니펫** — 설정 › 모양 › CSS 스니펫 › `brain-graph` 켜기.
@@ -295,7 +298,7 @@ python3 -I _System/Scripts/import_youknow.py --export-diaries-for-youknow ~/Desk
 (cron 또는 launchd) → Obsidian Git이 10분 안에 커밋. 종료 코드 1이면 `98_연동/YouKnow.md` 상단에 `⚠️` 줄이 남습니다.
 
 ### 7-8. Vercel `WIDGET_KEY` — 선택적 앱 동기화
-`_System/Templates/tpl-inbox.md` 상단의 `PUSH_TO_YOUKNOW = true` + `YK_CAPTURE_KEY`를 켜면 ⚡ 원문 줄을 그대로 앱 `POST https://youknow-meta-data-weom.vercel.app/api/capture`로도 보내 앱이 같은 항목을 갖게 됩니다(앱 파서 = 같은 규칙). 볼트 노트에는 `yk_pending: true`가 남고, 야간 importer가 (title, due_date, created ±1일)로 채택해 `yk_id`를 채웁니다. 전송 실패 시 노트만 남고 `yk_dirty: true`. **앱 라이브는 현재 `locked:false`(키 없이 누구나 POST 가능)이므로 공개망에서 쓰기 전에 Vercel 환경변수 `WIDGET_KEY`를 먼저 설정하세요.**
+`_System/Templates/tpl-inbox.md` 상단의 `PUSH_TO_YOUKNOW = true` + `YK_CAPTURE_KEY`를 켜면 ⚡ 원문 줄을 그대로 앱 `POST https://youknow-meta-data-weom.vercel.app/api/capture`로도 보내 앱이 같은 항목을 갖게 됩니다(앱 파서 = 같은 규칙). 미리보기에서 **고른 항목만** 보냅니다(하나만 골랐으면 그 항목을 혼자서도 같은 뜻이 되게 다시 적어 보냄). 볼트 노트에는 `yk_pending: true`가 남고, 야간 importer가 (title, due_date, created ±1일)로 채택해 `yk_id`를 채웁니다. 채택이 안 된 노트는 `--push-pending`으로 **한 번** 보낼 수 있고, 보낸 노트에는 `yk_pushed: <날짜>`가 남아 다시 보내지 않습니다(이후 채택은 title + yk_pushed ±1일; 다시 보내려면 `--force-push`). 전송 실패 시 노트만 남고 `yk_dirty: true`. **앱 라이브는 현재 `locked:false`(키 없이 누구나 POST 가능)이므로 공개망에서 쓰기 전에 Vercel 환경변수 `WIDGET_KEY`를 먼저 설정하세요.**
 
 ### 7-9. 열린 질문 — RLS / anon key
 앱이 브라우저에서 anon key로 12테이블을 읽으므로 REST도 될 것으로 보지만, RLS 정책은 번들에서 볼 수 없습니다. 첫 `--supabase --dry-run`이 401/403이면 service role 키를 `.env`에 쓰거나 백업 JSON 모드로만 운용합니다.
@@ -322,7 +325,7 @@ python3 -I _System/Scripts/import_youknow.py --export-diaries-for-youknow ~/Desk
 - **커밋 제외**(.gitignore): `.obsidian/workspace*.json`, 플러그인 본체, `_System/Scripts/.env`, `_System/Scripts/.yk_index.json`, `98_연동/YouKnow/백업/*.json|zip`, `_Attachments/YouKnow/**`. 플러그인 **설정**(data.json)은 커밋됩니다.
 - **예약 태그**: 본문의 `#책 #글 #일기 #영구 #프로젝트 #사람 #분야 #할일 #습관 #굿노트`는 Auto Note Mover가 옮기는 신호, frontmatter의 `hub`는 그래프 색 신호입니다. 주제 태그로 쓰지 마세요. 일기의 주제 태그(`운동`, `친구` …)는 `50_일기/태그/` facet 노트가 그래프 노드를 대신합니다(`showTags:false`).
 - **마커 사이는 importer 소유**(4-5). 하루 계획·습관 체크는 이모지 불릿이라 클릭 토글이 안 됩니다 — 앱에서 토글하면 밤에 반영됩니다.
-- **완료 할 일의 `✅` 날짜는 마감일 근사치**(앱에 완료 시각 컬럼이 없음). 주간 "끝낸 일"은 근사치입니다.
+- **앱에서 끝낸 할 일의 `✅` 날짜는 마감일 근사치**(앱에 완료 시각 컬럼이 없음). 옵시디언에서 Tasks로 체크해 붙은 `✅ 날짜`는 실제 완료일로 `done` 속성에 간직됩니다. 주간 "끝낸 일"은 앱 주(일~토)로 셉니다.
 - **파일명 동결**: 앱에서 제목을 바꿔도 파일명은 첫 생성 때 그대로(alias 추가). 링크 안정성 > 파일명 최신성.
 - **플러그인 설정 파일은 출발점**: 버전에 따라 필드명이 다를 수 있으니 설치 후 설정 화면에서 값이 들어왔는지 한 번 확인하세요(특히 Auto Note Mover 태그 표기, Templater 사용자 스크립트 폴더).
 - **일간 스켈레톤**은 1년 365파일(빈 날 포함). 동기화 비용이 걸리면 `--no-fill-days`.

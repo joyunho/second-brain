@@ -5,7 +5,7 @@
 const draft = window.__ykDiaryDraft || null;
 if (draft) delete window.__ykDiaryDraft;
 const today = tp.date.now("YYYY-MM-DD");
-const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim(); return t || "이름 없음"; };
+const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
 const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 const basenames = (p) => { const f = app.vault.getAbstractFileByPath(p); return f && f.children ? f.children.filter(c => c.extension === "md").map(c => c.basename).sort((a, b) => a.localeCompare(b, "ko")) : []; };
 const ensureFolder = async (path) => { let cur = ""; for (const p of path.split("/").filter(Boolean)) { cur = cur ? `${cur}/${p}` : p; if (!app.vault.getAbstractFileByPath(cur)) { try { await app.vault.createFolder(cur); } catch (e) {} } } };
@@ -54,7 +54,7 @@ const wantPath = `50_일기/${date.slice(0, 4)}/${base}.md`;
 if (tp.config.target_file && tp.config.target_file.path !== wantPath) {
   const dup = app.vault.getAbstractFileByPath(wantPath);
   if (dup) {
-    new Notice("이미 그 날짜에 같은 종류의 일기가 있어요. 날짜·종류당 일기는 하나만 — 이 노트는 ' (2)'로 둡니다.");
+    new tp.obsidian.Notice("이미 그 날짜에 같은 종류의 일기가 있어요. 날짜·종류당 일기는 하나만 — 이 노트는 ' (2)'로 둡니다.");
     await ensureFolder(`50_일기/${date.slice(0, 4)}`);
     let n = 1, alt = `50_일기/${date.slice(0, 4)}/${base} (2)`;
     while (app.vault.getAbstractFileByPath(`${alt}.md`)) { n += 1; alt = `50_일기/${date.slice(0, 4)}/${base} (${n + 1})`; }

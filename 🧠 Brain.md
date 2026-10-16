@@ -38,7 +38,7 @@ dv.paragraph(`☀️ 오늘 노트 → [[${today}]] (${dow}) · 🗓️ 이번 �
 ```dataview
 TABLE WITHOUT ID file.link AS "할 일", status AS "상태", priority_label AS "우선순위", due AS "마감", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE type = "할일" AND due AND due <= date(today) AND status != "완료" AND status != "달성 못함"
+WHERE type = "할일" AND due AND due <= date(today) AND status != "완료" AND status != "달성 못함" AND !yk_deleted AND !yk_missing
 SORT due ASC, priority DESC
 LIMIT 15
 ```
@@ -61,7 +61,7 @@ const regions = [
   ["👤 사람", "95_사람"], ["🔌 연동", "98_연동"], ["📥 Inbox", "00_Inbox"],
 ];
 dv.table(["영역", "뉴런 수", "이번 주 새로 생긴 뉴런"], regions.map(([name, path]) => {
-  const pages = dv.pages(`"${path}"`).where(p => p.type !== "허브");
+  const pages = dv.pages(`"${path}"`).where(p => p.type !== "허브" && !p.yk_deleted && !p.yk_missing);
   const fresh = pages.where(p => p.file.cday >= dv.date("today").minus({ days: 7 })).length;
   return [dv.fileLink(name), pages.length, fresh];
 }));

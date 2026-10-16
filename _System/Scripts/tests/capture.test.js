@@ -463,6 +463,21 @@ const EXTRA_CORPUS = [
 const ORACLE_PROJECTS = ["유튜브 채널 개편", "유튜브 프로젝트", "집"];
 const EXTRA_PROJECTS = ["유튜브 채널 개편", "유튜브 프로젝트", "집", "이사"];
 
+// ───────── 회귀: weekdayMada 정규식 역추적(ReDoS) — "월 월 월 … 운동"(마다 없음)이 길어도 즉시 끝나야 한다 ─────────
+{
+  const t0 = Date.now();
+  const r = run("월 ".repeat(40) + "운동");
+  const ms = Date.now() - t0;
+  check("weekdayMada: 요일 40개 나열이 200ms 안에 끝남", ms < 200, `${ms}ms`);
+  check("weekdayMada: 결과는 여전히 항목 ≥ 1", r.items.length >= 1, JSON.stringify(r.items.length));
+  const t1 = Date.now();
+  run("월요일 ".repeat(60) + "헬스");
+  check("weekdayMada: 요일 60개(요일 접미) 나열이 500ms 안에 끝남", Date.now() - t1 < 500, `${Date.now() - t1}ms`);
+  // 정상 입력은 그대로 — 월수금마다 / 토일 마다 / 월·수·금마다
+  eq("월수금마다 → routine 월·수·금 (요일마다 항목 하나)", run("월수금마다 저녁 7시 헬스").items.map(i => `${i.kind}:${i.weekdays.join("")}`), ["routine:1", "routine:3", "routine:5"]);
+  eq("토일 마다 → routine 토·일", run("토일 마다 아침 9시 러닝").items.map(i => `${i.kind}:${i.weekdays.join("")}`), ["routine:6", "routine:0"]);
+}
+
 if (oracle) {
   let compared = 0;
   const strip = (items) => items.map((i) => { const o = { ...i }; delete o.dateExplicit; return o; });

@@ -64,14 +64,14 @@ ${events}
 ${F}dataview
 TABLE WITHOUT ID file.link AS "할 일", priority_label AS "우선순위", due AS "마감", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due < date(${date}) AND status != "완료" AND status != "달성 못함"
+WHERE due AND due < date(${date}) AND status != "완료" AND status != "달성 못함" AND !yk_deleted AND !yk_missing
 SORT due ASC, priority DESC
 ${F}
 ### 오늘 마감
 ${F}dataview
 TABLE WITHOUT ID file.link AS "할 일", status AS "상태", priority_label AS "우선순위", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due = date(${date})
+WHERE due = date(${date}) AND !yk_deleted AND !yk_missing
 SORT status ASC, priority DESC
 ${F}
 ${F}tasks
@@ -84,7 +84,7 @@ ${F}
 ${F}dataview
 TABLE WITHOUT ID file.link AS "할 일", priority_label AS "우선순위", project AS "프로젝트"
 FROM "30_할일/목록"
-WHERE due = date(${date}) AND status = "달성 못함"
+WHERE due = date(${date}) AND status = "달성 못함" AND !yk_deleted AND !yk_missing
 SORT priority DESC
 ${F}
 - [ ] 

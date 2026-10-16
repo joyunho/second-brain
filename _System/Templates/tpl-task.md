@@ -5,7 +5,7 @@
 const draft = window.__ykTaskDraft || null;
 if (draft) delete window.__ykTaskDraft;
 const today = tp.date.now("YYYY-MM-DD");
-const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim(); return t || "이름 없음"; };
+const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
 const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 const PRIORITY_LABELS = (tp.user.capture && tp.user.capture.PRIORITY_LABELS) || { 5: "긴급", 4: "중요", 3: "보통", 2: "낮음", 1: "언젠가" };
 const PRIORITY_MARK = { 5: "🔺", 4: "⏫", 3: "", 2: "🔽", 1: "⏬" };

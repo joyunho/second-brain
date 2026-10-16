@@ -14,12 +14,14 @@ const today = tp.date.now("YYYY-MM-DD");
 const file = tp.config.target_file;
 const rawTitle = tp.file.title;
 const isUntitled = /^(Untitled|제목 없음)/.test(rawTitle);
-const isFlash = /^⚡/.test(rawTitle);          // Advanced URI "뇌에 추가" 단축어: 메뉴 없이 본문을 바로 파싱
+const isFlash = /^⚡/.test(rawTitle);          // Advanced URI "뇌에 추가" 단축어: 메뉴 없이 본문을 바로 파싱 — URL 의 data 가 tp.file.include("[[tpl-inbox]]") Templater 명령 줄로 시작해야 실행된다(폴더 템플릿은 빈 파일에만 적용됨; README 3-6)
 
 // ── 공용 도우미 ─────────────────────────────────────────────────────────────
-const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim(); return t || "이름 없음"; };
+const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
 const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
-const notice = (msg) => { try { new Notice(msg); } catch (e) { console.log(msg); } };
+// 파일명용 E(): UTF-8 200바이트 안으로 자른다(ext4/APFS NAME_MAX 255 − " (n).md"; 한글 약 66자). 전체 제목은 frontmatter title/H1 에 남는다.
+const fname = (s) => { let t = E(s); const enc = new TextEncoder(); while (enc.encode(t).length > 200) t = t.slice(0, -1); t = t.trim().replace(/[. ]+$/g, ""); return t || "이름 없음"; };
+const notice = (msg) => { try { new tp.obsidian.Notice(msg, 8000); } catch (e) { console.log(msg); } };   // Notice 는 전역이 아니라 tp.obsidian 으로
 const PRIORITY_LABELS = (tp.user.capture && tp.user.capture.PRIORITY_LABELS) || { 5: "긴급", 4: "중요", 3: "보통", 2: "낮음", 1: "언젠가" };
 const PRIORITY_MARK = { 5: "🔺", 4: "⏫", 3: "", 2: "🔽", 1: "⏬" };
 const DOW = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
@@ -51,6 +53,7 @@ const ensureFolder = async (path) => {
   return folderOf(path);
 };
 const uniquePath = (folder, base) => {
+  base = fname(base);
   let n = 1, path = `${folder}/${base}.md`;
   while (app.vault.getAbstractFileByPath(path)) { n += 1; path = `${folder}/${base} (${n}).md`; }
   return path;
@@ -111,7 +114,7 @@ const getOrCreateWeekday = async (dow) => {
   return tfile || app.vault.getAbstractFileByPath(path);
 };
 const createProject = async (name) => {
-  const safe = E(name);
+  const safe = fname(name);
   const path = `40_프로젝트/${safe}/${safe}.md`;
   if (app.vault.getAbstractFileByPath(path)) return app.vault.getAbstractFileByPath(path);
   const folder = await ensureFolder(`40_프로젝트/${safe}`);
@@ -125,7 +128,7 @@ const createProject = async (name) => {
   return tfile || app.vault.getAbstractFileByPath(path);
 };
 const createHabit = async (name) => {
-  const safe = E(name);
+  const safe = fname(name);
   const path = `60_습관/${safe}.md`;
   if (app.vault.getAbstractFileByPath(path)) return app.vault.getAbstractFileByPath(path);
   const folder = await ensureFolder("60_습관");
@@ -177,7 +180,7 @@ const makeTaskNote = (item) => {
     ...(item.due ? [`due: ${item.due}`] : []),
     `daily: "[[${start}]]"`,
     ...(item.due ? [`마감: "[[${item.due}]]"`] : []),
-    ...(item.project ? [`project: "[[${E(item.project)}]]"`] : []),
+    ...(item.project ? [`project: "[[${fname(item.project)}]]"`] : []),
     `created: ${today}`,
     "yk_pending: true",
     ...(item.dirty ? ["yk_dirty: true"] : []),
@@ -199,7 +202,7 @@ ${item.note ? item.note + "\n" : ""}%% yk:note:end %%
 `;
 };
 const writeTask = async (item) => {
-  if (item.project && !projectNames().includes(E(item.project))) await createProject(item.project);
+  if (item.project && !projectNames().includes(fname(item.project))) await createProject(item.project);
   const folder = await ensureFolder("30_할일/목록");
   const path = uniquePath(folder.path, E(item.title));
   return app.vault.create(path, makeTaskNote(item));
@@ -270,21 +273,33 @@ const runCapture = async (text) => {
   const labels = [`${items.length}개로 나눴어요 · 모두 추가`, ...items.map(describe), "취소"];
   const values = ["__all", ...items.map((_, i) => i), "__cancel"];
   const pick = await tp.system.suggester(labels, values, false, "미리보기 — 모두 추가 / 하나만 고르기 / 취소");
-  if (pick == null || pick === "__cancel") return false;
+  if (pick == null || pick === "__cancel") { notice("취소했어요 — 입력한 내용은 Inbox 노트에 그대로 남겨둡니다."); return false; }
   const chosen = pick === "__all" ? items : [items[pick]];
 
   let dirty = false;
   if (PUSH_TO_YOUKNOW) {
+    // 고른 항목만 보낸다. 전체를 골랐으면 원문 그대로(앱 파서가 같은 묶음으로 읽는다), 하나만 골랐으면 그 항목을 혼자서도 같은 뜻이 되게 다시 적는다
+    // (조각 raw 는 헤더 줄의 날짜·우선순위·프로젝트를 물려받았을 수 있어 그대로 보내면 뜻이 달라진다).
+    const PRIO_WORD = { 5: " 긴급", 4: " 중요", 2: " 낮음", 1: " 언젠가" };
+    const selfContained = (it) => {
+      const proj = it.project ? (it.project.length >= 2 ? ` [${it.project}]` : ` #${it.project}`) : "";
+      if (it.kind === "task") return `${it.due ? it.due + "까지 " : ""}${it.title}${PRIO_WORD[it.priority] || ""}${proj}`;
+      if (it.kind === "plan") return `${it.date || today} ${it.start_time}${it.end_time ? "-" + it.end_time : ""} ${it.title}`;
+      if (it.kind === "routine") return `매주 ${(it.weekdays || []).map(d => DOW[d].slice(0, 1)).join("")} ${it.start_time}${it.end_time ? "-" + it.end_time : ""} ${it.title}`;
+      if (it.kind === "habit") return `매일 ${it.title}`;
+      if (it.kind === "project") return `프로젝트: ${it.title}`;
+      return it.raw || it.title;
+    };
+    const pushText = pick === "__all" ? text : chosen.map(selfContained).join("\n");
     try {
-      let req = null;
-      try { req = window.require ? window.require("obsidian").requestUrl : null; } catch (e) { req = null; }
-      const body = JSON.stringify({ text, key: YK_CAPTURE_KEY });
-      if (req) await req({ url: YK_CAPTURE_URL, method: "POST", contentType: "application/json", body });
+      const body = JSON.stringify({ text: pushText, key: YK_CAPTURE_KEY, today });
+      if (tp.obsidian && typeof tp.obsidian.requestUrl === "function") await tp.obsidian.requestUrl({ url: YK_CAPTURE_URL, method: "POST", contentType: "application/json", body });
       else await fetch(YK_CAPTURE_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body });
     } catch (e) { dirty = true; notice("YouKnow 전송 실패 — 노트에 yk_dirty 를 표시했어요."); }
   }
 
   const made = [];
+  const failed = [];
   for (const it of chosen) {
     try {
       if (it.kind === "task") { const f = await writeTask({ ...it, dirty }); made.push(f.basename); }
@@ -292,10 +307,11 @@ const runCapture = async (text) => {
       else if (it.kind === "habit") { const f = await createHabit(it.title); made.push(`습관 ${f ? f.basename : it.title}`); }
       else if (it.kind === "routine") { for (const d of (it.weekdays && it.weekdays.length ? it.weekdays : [moment(today).day()])) { await routineRow(it, d); made.push(`${DOW[d]} 일과`); } }
       else if (it.kind === "project") { const f = await createProject(it.title); made.push(`프로젝트 ${f ? f.basename : it.title}`); }
-    } catch (e) { notice(`"${it.title}" 추가 실패: ${e.message}`); }
+    } catch (e) { failed.push(it.raw || it.title); notice(`"${it.title}" 추가 실패: ${e.message}`); }
   }
-  notice(`추가됨: ${made.join(", ") || "없음"}`);
-  return true;
+  notice(`추가됨: ${made.join(", ") || "없음"}` + (failed.length ? ` · 실패 ${failed.length}건은 Inbox 노트에 남겨둡니다` : ""));
+  // 전부 성공했을 때만 라우터 노트를 지운다. 하나라도 실패하면 실패한 줄(원문)을 Inbox 노트에 남긴다 — 입력이 사라지지 않게
+  return { ok: made.length > 0 && failed.length === 0, failed };
 };
 
 // ── 메뉴 ────────────────────────────────────────────────────────────────────
@@ -332,7 +348,11 @@ if (id === "capture") {
     const seed = [isUntitled ? "" : rawTitle, bodyText].filter(Boolean).join("\n");
     text = await tp.system.prompt("할 일·계획·습관을 막 적어보세요 (여러 줄도 돼요 · 예: 내일 오후 3시 치과 / 매주 월수금 저녁 7시 헬스 / - 9/10까지 영상 편집!!)", seed, false, true);
   }
-  if (text && text.trim()) routed = await runCapture(text.trim());
+  if (text && text.trim()) {
+    const res = await runCapture(text.trim());
+    routed = !!(res && res.ok);
+    if (!routed) bodyText = (res && res.failed && res.failed.length) ? res.failed.join("\n") : text.trim();   // "그냥 캡처로 남깁니다" — 원문 보존
+  }
   if (routed) { tR += ""; trashLater(file); }
 }
 else if (id === "task") {
@@ -356,11 +376,18 @@ else if (id === "task") {
 else if (id === "project") {
   const name = isUntitled ? await tp.system.prompt("프로젝트 이름") : rawTitle;
   if (name && name.trim()) {
-    const safe = E(name);
-    await ensureFolder(`40_프로젝트/${safe}`);
-    const path = uniquePath(`40_프로젝트/${safe}`, safe).replace(/\.md$/, "");
-    await tp.file.move(path);
-    tR += await tp.file.include("[[tpl-project]]");
+    const safe = fname(name);
+    const existing = app.vault.getAbstractFileByPath(`40_프로젝트/${safe}/${safe}.md`);
+    if (existing) {
+      notice(`"${safe}" 프로젝트가 이미 있어요 — 그 노트를 엽니다.`);
+      tR += "";
+      trashLater(file);
+      openLater(existing);
+    } else {
+      await ensureFolder(`40_프로젝트/${safe}`);
+      await tp.file.move(`40_프로젝트/${safe}/${safe}`);   // folder note 경로는 결정적 — 충돌 = "기존 열기", 옆에 (2) 노트를 만들지 않는다
+      tR += await tp.file.include("[[tpl-project]]");
+    }
     routed = true;
   }
 }

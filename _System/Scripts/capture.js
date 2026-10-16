@@ -484,7 +484,8 @@ function parseLine(rawText, opts) {
   const isDaily = !isProjectPrefixed && /매일|맨날|날마다/.test(text);
   let weekdays = [];
   const everyWeekList = text.match(/매주\s*((?:[일월화수목금토](?:요일|욜)?)(?:\s*[·/및과와,]?\s*[일월화수목금토](?:요일|욜)?)*)(?![가-힣])/);
-  const weekdayMada = text.match(new RegExp("(?<![가-힣\\d])((?:[일월화수목금토](?:요일|욜)?)(?:\\s*[\xb7/및과와,]?\\s*[일월화수목금토](?:요일|욜)?)*)\\s*마다"));
+  // 구분자를 선택 그룹 하나로 묶어 공백 자리마다 분기가 하나만 생기게 한다 — 옛 `\s*[·]?\s*` 꼴은 "월 월 월 … 운동"(마다 없음)에서 2^n 역추적
+  const weekdayMada = text.match(new RegExp("(?<![가-힣\\d])((?:[일월화수목금토](?:요일|욜)?)(?:(?:\\s*[\xb7/및과와,])?\\s*[일월화수목금토](?:요일|욜)?)*)\\s*마다"));
   let habitHint = null;
   const everyNDays = text.match(new RegExp("(?<!\\d)(\\d{1,2})\\s*일\\s*마다"));
   const oneADay = text.match(/(^|\s)1일\s*1(?=[가-힣a-zA-Z])/);
