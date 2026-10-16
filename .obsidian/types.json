@@ -65,6 +65,14 @@
     "yk_missing": "date",
     "yk_dirty": "checkbox",
     "yk_pending": "checkbox",
-    "yk_area": "checkbox"
+    "yk_area": "checkbox",
+    "weather": "number",
+    "pdf": "text",
+    "role": "text",
+    "photos_pending": "number",
+    "last_import": "text",
+    "site_name": "text",
+    "week_start": "text",
+    "counts": "multitext"
   }
 }

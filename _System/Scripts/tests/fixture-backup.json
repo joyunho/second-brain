@@ -1,0 +1,264 @@
+{
+  "exported_at": "2026-10-16T02:30:00.000Z",
+  "settings": {
+    "user_id": "00000000-0000-0000-0000-000000000001",
+    "site_name": "YouKnow Meta data",
+    "moods": ["최고", "좋음", "보통", "별로", "힘듦"],
+    "tags": ["운동", "게임", "외출", "친구", "공부", "유튜브", "휴식", "돈관리"],
+    "diary_types": [
+      {"id": "general", "name": "일반", "icon": "book-open", "color": "#a78bfa", "kind": "general", "template": "", "fields": []},
+      {"id": "workout", "name": "운동", "icon": "dumbbell", "color": "#34d399", "kind": "workout", "template": "오늘 운동\n- \n\n느낀 점\n- ", "parts": ["가슴", "등", "어깨", "팔", "하체", "코어", "유산소"], "fields": []}
+    ]
+  },
+  "daily_logs": [
+    {
+      "id": "2e9c1a7f-5b3e-4c21-9d7a-1f2e3d4c5b01",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "10/14 기록",
+      "log_date": "2026-10-14",
+      "mood": "좋음",
+      "tags": ["운동", "친구"],
+      "body": "오후에 친구와 한강 산책.\n저녁엔 헬스 30분.\n\n내일은 일찍 자기.",
+      "photo_path": null,
+      "diary_type": "general",
+      "metrics": {"수면": 7},
+      "deleted_at": null,
+      "created_at": "2026-10-14T13:05:00.000Z"
+    },
+    {
+      "id": "6d41b8c2-0f9a-4e67-8b12-a3c4d5e6f702",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "10/15 운동",
+      "log_date": "2026-10-15",
+      "mood": "최고",
+      "tags": ["운동"],
+      "body": "오늘 운동\n- 벤치 60kg 5×5\n- 랫풀다운 3세트\n\n느낀 점\n- 어깨가 가볍다",
+      "photo_path": "00000000-0000-0000-0000-000000000001/daily/6d41b8c2-0f9a-4e67-8b12-a3c4d5e6f702/9f0e1a2b-IMG_0012.jpg",
+      "diary_type": "workout",
+      "metrics": {"parts": ["가슴", "등"], "duration_min": 45, "intensity": "보통"},
+      "deleted_at": null,
+      "created_at": "2026-10-15T12:40:00.000Z"
+    },
+    {
+      "id": "9b7e2f10-3c4d-4a5b-8c6d-7e8f9a0b1c03",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "10/10 기록",
+      "log_date": "2026-10-10",
+      "mood": "",
+      "tags": [],
+      "body": "지운 일기",
+      "photo_path": null,
+      "diary_type": "general",
+      "metrics": {},
+      "deleted_at": "2026-10-12T01:00:00.000Z",
+      "created_at": "2026-10-10T14:00:00.000Z"
+    }
+  ],
+  "daily_photos": [
+    {
+      "id": "7a7a5e21-1b2c-4d3e-9f4a-5b6c7d8e9f01",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "daily_log_id": "6d41b8c2-0f9a-4e67-8b12-a3c4d5e6f702",
+      "photo_path": "00000000-0000-0000-0000-000000000001/daily/6d41b8c2-0f9a-4e67-8b12-a3c4d5e6f702/9f0e1a2b-IMG_0012.jpg",
+      "caption": "벤치 60kg",
+      "sort_order": 0,
+      "created_at": "2026-10-15T12:41:00.000Z"
+    },
+    {
+      "id": "b3c4d5e6-2c3d-4e4f-8a5b-6c7d8e9fa002",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "daily_log_id": "6d41b8c2-0f9a-4e67-8b12-a3c4d5e6f702",
+      "photo_path": "00000000-0000-0000-0000-000000000001/daily/6d41b8c2-0f9a-4e67-8b12-a3c4d5e6f702/8c1d2e3f-IMG_0013.jpg",
+      "caption": "",
+      "sort_order": 1,
+      "created_at": "2026-10-15T12:42:00.000Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "3f9a1c2e-7d8e-4f90-a1b2-c3d4e5f6a001",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "영상 편집",
+      "priority": 4,
+      "start_date": "2026-10-01",
+      "due_date": "2026-10-17",
+      "status": "진행 전",
+      "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "note": "썸네일 먼저, 그 다음 인트로.",
+      "deleted_at": null,
+      "created_at": "2026-10-01T01:00:00.000Z"
+    },
+    {
+      "id": "8e2d4f61-9a0b-4c1d-b2e3-f4a5b6c7d002",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "치과 예약",
+      "priority": 5,
+      "start_date": "2026-10-10",
+      "due_date": "2026-10-12",
+      "status": "완료",
+      "project_id": null,
+      "note": "",
+      "deleted_at": null,
+      "created_at": "2026-10-10T02:00:00.000Z"
+    },
+    {
+      "id": "c17a9b35-0b1c-4d2e-93f4-a5b6c7d8e003",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "책 읽기: 아주 작은 습관의 힘",
+      "priority": 1,
+      "start_date": "2026-10-05",
+      "due_date": null,
+      "status": "진행 중",
+      "project_id": null,
+      "note": "하루 20쪽",
+      "deleted_at": null,
+      "created_at": "2026-10-05T03:00:00.000Z"
+    },
+    {
+      "id": "d4e5f6a7-1c2d-4e3f-84a5-b6c7d8e9f004",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "title": "영어 단어 100개",
+      "priority": 2,
+      "start_date": "2026-10-08",
+      "due_date": "2026-10-09",
+      "status": "달성 못함",
+      "project_id": null,
+      "note": "",
+      "deleted_at": null,
+      "created_at": "2026-10-08T04:00:00.000Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "name": "유튜브 채널 개편",
+      "goal": "구독자 1만",
+      "status": "진행 중",
+      "area": "유튜브",
+      "start_date": "2026-09-01",
+      "due_date": "2026-12-31",
+      "next_action": "썸네일 템플릿 만들기",
+      "resources": "https://www.youtube.com/@example 채널 참고\n- 썸네일 레퍼런스 모으기",
+      "deleted_at": null,
+      "created_at": "2026-09-01T00:30:00.000Z"
+    },
+    {
+      "id": "f0a1b2c3-3e4f-4051-a6c7-d8e9f0a1b002",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "name": "방 정리",
+      "goal": "",
+      "status": "계획",
+      "area": null,
+      "start_date": "2026-10-05",
+      "due_date": null,
+      "next_action": "",
+      "resources": "",
+      "deleted_at": null,
+      "created_at": "2026-10-05T09:00:00.000Z"
+    }
+  ],
+  "project_sections": [
+    {"id": "5e5e1a2b-4f50-4162-b7d8-e9f0a1b2c001", "owner_id": "00000000-0000-0000-0000-000000000001", "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001", "name": "기획", "sort_order": 0},
+    {"id": "6f6f2b3c-5061-4273-c8e9-f0a1b2c3d002", "owner_id": "00000000-0000-0000-0000-000000000001", "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001", "name": "제작", "sort_order": 1}
+  ],
+  "project_checklist": [
+    {
+      "id": "a1b2c3d4-6172-4384-d9f0-a1b2c3d4e001",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "text": "채널 아트 교체",
+      "details": "1920×1080\n배경은 어둡게",
+      "done": true,
+      "photo_path": "00000000-0000-0000-0000-000000000001/checklist/9f0e4455-art.jpg",
+      "section_id": null,
+      "sort_order": 0,
+      "created_at": "2026-09-02T01:00:00.000Z"
+    },
+    {
+      "id": "b2c3d4e5-7283-4495-ea01-b2c3d4e5f002",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "text": "콘텐츠 캘린더",
+      "details": "",
+      "done": false,
+      "photo_path": null,
+      "section_id": "5e5e1a2b-4f50-4162-b7d8-e9f0a1b2c001",
+      "sort_order": 1,
+      "created_at": "2026-09-03T01:00:00.000Z"
+    },
+    {
+      "id": "c3d4e5f6-8394-45a6-fb12-c3d4e5f6a003",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "text": "인트로 영상",
+      "details": "",
+      "done": false,
+      "photo_path": null,
+      "section_id": "6f6f2b3c-5061-4273-c8e9-f0a1b2c3d002",
+      "sort_order": 2,
+      "created_at": "2026-09-04T01:00:00.000Z"
+    },
+    {
+      "id": "d4e5f6a7-94a5-46b7-8c23-d4e5f6a7b004",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "f0a1b2c3-3e4f-4051-a6c7-d8e9f0a1b002",
+      "text": "책상 위 치우기",
+      "details": "",
+      "done": true,
+      "photo_path": null,
+      "section_id": null,
+      "sort_order": 0,
+      "created_at": "2026-10-05T09:10:00.000Z"
+    }
+  ],
+  "project_resources": [
+    {
+      "id": "c0ffee11-a5b6-47c8-9d34-e5f6a7b8c001",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "title": "",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "body": "썸네일 구성 참고 영상",
+      "sort_order": -10,
+      "created_at": "2026-10-02T05:00:00.000Z",
+      "updated_at": "2026-10-05T05:00:00.000Z"
+    },
+    {
+      "id": "d1ff0022-b6c7-48d9-ae45-f6a7b8c9d002",
+      "owner_id": "00000000-0000-0000-0000-000000000001",
+      "project_id": "e5f6a7b8-2d3e-4f40-95b6-c7d8e9f0a001",
+      "title": "",
+      "url": "",
+      "body": "업로드 요일: 화·금\n인트로 5초 이내",
+      "sort_order": 0,
+      "created_at": "2026-10-03T05:00:00.000Z",
+      "updated_at": null
+    }
+  ],
+  "habits": [
+    {"id": "4b4b7c8d-c7d8-49ea-bf56-a7b8c9d0e001", "owner_id": "00000000-0000-0000-0000-000000000001", "name": "헬스", "color": "#34d399", "sort_order": 0, "created_at": "2026-09-20T01:00:00.000Z"},
+    {"id": "5c5c8d9e-d8e9-4afb-8067-b8c9d0e1f002", "owner_id": "00000000-0000-0000-0000-000000000001", "name": "영어", "color": "#38bdf8", "sort_order": 10, "created_at": "2026-10-03T01:00:00.000Z"}
+  ],
+  "habit_checks": [
+    {"id": "6c6c9eaf-e9fa-4b0c-9178-c9d0e1f2a001", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "4b4b7c8d-c7d8-49ea-bf56-a7b8c9d0e001", "check_date": "2026-10-12"},
+    {"id": "7d7dafb0-fa0b-4c1d-a289-d0e1f2a3b002", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "4b4b7c8d-c7d8-49ea-bf56-a7b8c9d0e001", "check_date": "2026-10-13"},
+    {"id": "8e8eb0c1-0b1c-4d2e-b39a-e1f2a3b4c003", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "4b4b7c8d-c7d8-49ea-bf56-a7b8c9d0e001", "check_date": "2026-10-14"},
+    {"id": "9f9fc1d2-1c2d-4e3f-c4ab-f2a3b4c5d004", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "4b4b7c8d-c7d8-49ea-bf56-a7b8c9d0e001", "check_date": "2026-10-15"},
+    {"id": "a0a0d2e3-2d3e-4f40-d5bc-a3b4c5d6e005", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "4b4b7c8d-c7d8-49ea-bf56-a7b8c9d0e001", "check_date": "2026-10-16"},
+    {"id": "b1b1e3f4-3e4f-4051-e6cd-b4c5d6e7f006", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "5c5c8d9e-d8e9-4afb-8067-b8c9d0e1f002", "check_date": "2026-10-14"},
+    {"id": "c2c2f405-4f50-4162-f7de-c5d6e7f8a007", "owner_id": "00000000-0000-0000-0000-000000000001", "habit_id": "5c5c8d9e-d8e9-4afb-8067-b8c9d0e1f002", "check_date": "2026-10-15"}
+  ],
+  "routine_blocks": [
+    {"id": "1a2b3c4d-5061-4273-88ef-d6e7f8a9b001", "owner_id": "00000000-0000-0000-0000-000000000001", "weekday": 1, "start_time": "07:00", "end_time": "08:00", "title": "헬스", "color": "#34d399"},
+    {"id": "2b3c4d5e-6172-4384-99f0-e7f8a9b0c002", "owner_id": "00000000-0000-0000-0000-000000000001", "weekday": 3, "start_time": "19:00", "end_time": "", "title": "영어", "color": "#38bdf8"},
+    {"id": "3c4d5e6f-7283-4495-aa01-f8a9b0c1d003", "owner_id": "00000000-0000-0000-0000-000000000001", "weekday": 5, "start_time": "07:00", "end_time": "08:00", "title": "헬스", "color": "#34d399"},
+    {"id": "4d5e6f70-8394-45a6-bb12-a9b0c1d2e004", "owner_id": "00000000-0000-0000-0000-000000000001", "weekday": 5, "start_time": "21:00", "end_time": "21:30", "title": "스트레칭", "color": "#f472b6"}
+  ],
+  "day_plans": [
+    {"id": "7b21d0aa-94a5-46b7-cc23-b0c1d2e3f001", "owner_id": "00000000-0000-0000-0000-000000000001", "plan_date": "2026-10-15", "start_time": "09:00", "end_time": "10:00", "title": "헬스", "color": "#34d399", "done": true, "failed": false},
+    {"id": "8c32e1bb-a5b6-47c8-dd34-c1d2e3f4a002", "owner_id": "00000000-0000-0000-0000-000000000001", "plan_date": "2026-10-15", "start_time": "14:00", "end_time": "15:00", "title": "영상 편집", "color": "#38bdf8", "done": false, "failed": true},
+    {"id": "c91e44f0-b6c7-48d9-ee45-d2e3f4a5b003", "owner_id": "00000000-0000-0000-0000-000000000001", "plan_date": "2026-10-15", "start_time": "20:00", "end_time": "21:00", "title": "독서", "color": "#f59e0b", "done": false, "failed": false},
+    {"id": "9d43f2cc-c7d8-49ea-ff56-e3f4a5b6c004", "owner_id": "00000000-0000-0000-0000-000000000001", "plan_date": "2026-10-16", "start_time": "10:00", "end_time": "11:00", "title": "공부", "color": "#2dd4bf", "done": false, "failed": false}
+  ]
+}

@@ -3,7 +3,7 @@
 GoodNotes 5 → Obsidian 노트 자동 생성
 
 GoodNotes가 클라우드(Google Drive / Dropbox / OneDrive)로 자동 백업한 PDF를
-볼트 안으로 복사하고, 노트북마다 `80_Sources/GoodNotes/<노트북>.md` 를 만들어
+볼트 안으로 복사하고, 노트북마다 `80_문헌/굿노트/<노트북>.md` 를 만들어
 PDF를 임베드합니다. 이미 있는 .md 는 절대 덮어쓰지 않습니다 (내가 적은 메모 보호).
 
 사용법 (볼트 루트에서):
@@ -24,8 +24,8 @@ import sys
 from pathlib import Path
 
 VAULT = Path(__file__).resolve().parents[2]
-PDF_DIR = VAULT / "90_Attachments" / "GoodNotes"
-NOTE_DIR = VAULT / "80_Sources" / "GoodNotes"
+PDF_DIR = VAULT / "_Attachments" / "GoodNotes"
+NOTE_DIR = VAULT / "80_문헌" / "굿노트"
 FORBIDDEN = re.compile(r'[\\/:*?"<>|#^\[\]]')
 
 
@@ -53,9 +53,8 @@ def copy_new_pdfs(src: Path, dry_run: bool) -> list[Path]:
 
 def note_body(stem: str, today: str) -> str:
     return f"""---
-type: goodnotes
-tags: [goodnotes]
-up: "[[🔌 Sources]]"
+type: 굿노트
+up: "[[📚 문헌]]"
 pdf: "[[{stem}.pdf]]"
 daily: "[[{today}]]"
 created: {today}
@@ -64,9 +63,12 @@ area:
 # ✍️ {stem}
 
 > [!info] GoodNotes 5에서 가져온 손글씨 노트
-> 원본 PDF: `90_Attachments/GoodNotes/{stem}.pdf` · 가져온 날: {today}
+> 원본 PDF: `_Attachments/GoodNotes/{stem}.pdf` · 가져온 날: {today}
 
 ## 핵심 정리 (손글씨 → 텍스트)
+- 
+
+## 이 노트에서 나온 영구 노트
 - 
 
 ## 연결
@@ -95,7 +97,7 @@ def create_notes(dry_run: bool) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--src", help="GoodNotes 백업 PDF가 떨어지는 폴더 (생략하면 90_Attachments/GoodNotes 만 스캔)")
+    ap.add_argument("--src", help="GoodNotes 백업 PDF가 떨어지는 폴더 (생략하면 _Attachments/GoodNotes 만 스캔)")
     ap.add_argument("--dry-run", action="store_true", help="실제로 쓰지 않고 할 일만 출력")
     args = ap.parse_args()
 
