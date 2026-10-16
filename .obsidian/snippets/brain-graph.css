@@ -1,0 +1,35 @@
+/* 🧠 brain-graph — 그래프 뷰를 뉴런/시냅스 느낌으로
+   설정 > 모양 > CSS 스니펫 에서 켭니다. */
+
+/* 그래프 색 (Obsidian이 이 클래스들의 color 값을 읽어 캔버스에 그립니다) */
+.graph-view.color-fill            { color: #dfe6ff; }  /* 일반 노드 (뉴런 세포체) */
+.graph-view.color-fill-focused    { color: #ffffff; }
+.graph-view.color-fill-highlight  { color: #ffffff; }
+.graph-view.color-fill-tag        { color: #ffd54f; }  /* 태그 노드 */
+.graph-view.color-fill-attachment { color: #90a4ae; }
+.graph-view.color-fill-unresolved { color: #4a5568; }
+.graph-view.color-line            { color: rgba(138, 180, 255, 0.28); }  /* 시냅스 */
+.graph-view.color-line-highlight  { color: #8ab4ff; }
+.graph-view.color-arrow           { color: rgba(138, 180, 255, 0.6); }
+.graph-view.color-circle          { color: #8ab4ff; }
+.graph-view.color-text            { color: #c9d1d9; }
+
+body {
+  --graph-node: #dfe6ff;
+  --graph-node-focused: #ffffff;
+  --graph-node-tag: #ffd54f;
+  --graph-node-attachment: #90a4ae;
+  --graph-node-unresolved: #4a5568;
+  --graph-line: rgba(138, 180, 255, 0.28);
+  --graph-line-highlight: #8ab4ff;
+  --graph-text: #c9d1d9;
+}
+
+/* 깊은 우주/뇌 속 같은 배경 */
+.workspace-leaf-content[data-type="graph"] .view-content,
+.workspace-leaf-content[data-type="localgraph"] .view-content {
+  background: radial-gradient(ellipse at 50% 40%, #0f1630 0%, #080b18 55%, #04060e 100%);
+}
+
+/* 허브 노트 본문 살짝 강조 */
+.hub .inline-title { letter-spacing: 0.02em; }

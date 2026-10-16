@@ -1,0 +1,10 @@
+{
+  "shouldConfirmBeforeCreate": false,
+  "weekStart": "monday",
+  "showWeeklyNote": true,
+  "wordsPerDot": 250,
+  "localeOverride": "ko",
+  "weeklyNoteFormat": "GGGG-[W]WW",
+  "weeklyNoteTemplate": "_System/Templates/tpl-weekly.md",
+  "weeklyNoteFolder": "10_Daily/Weekly"
+}

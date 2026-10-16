@@ -1,0 +1,33 @@
+{
+  "collapse-filter": false,
+  "search": "-path:_System -path:90_Attachments",
+  "showTags": true,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    { "query": "tag:#hub",          "color": { "a": 1, "rgb": 16766287 } },
+    { "query": "path:00_Inbox",     "color": { "a": 1, "rgb": 15684432 } },
+    { "query": "path:10_Daily",     "color": { "a": 1, "rgb": 5099745 } },
+    { "query": "path:20_Journal",   "color": { "a": 1, "rgb": 12216520 } },
+    { "query": "path:30_Tasks",     "color": { "a": 1, "rgb": 8505220 } },
+    { "query": "path:40_Library",   "color": { "a": 1, "rgb": 16758605 } },
+    { "query": "path:50_Ideas",     "color": { "a": 1, "rgb": 16773494 } },
+    { "query": "path:60_Areas",     "color": { "a": 1, "rgb": 6600182 } },
+    { "query": "path:70_People",    "color": { "a": 1, "rgb": 15753874 } },
+    { "query": "path:80_Sources",   "color": { "a": 1, "rgb": 9479342 } }
+  ],
+  "collapse-display": false,
+  "showArrow": false,
+  "textFadeMultiplier": -0.6,
+  "nodeSizeMultiplier": 1.3,
+  "lineSizeMultiplier": 0.8,
+  "collapse-forces": false,
+  "centerStrength": 0.35,
+  "repelStrength": 12,
+  "linkStrength": 0.9,
+  "linkDistance": 180,
+  "scale": 0.8,
+  "close": false
+}

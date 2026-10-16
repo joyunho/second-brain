@@ -1,0 +1,6 @@
+{
+  "baseFontSize": 16,
+  "theme": "obsidian",
+  "accentColor": "#8AB4FF",
+  "enabledCssSnippets": ["brain-graph"]
+}

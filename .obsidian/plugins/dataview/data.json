@@ -1,0 +1,14 @@
+{
+  "enableDataviewJs": true,
+  "enableInlineDataview": true,
+  "enableInlineDataviewJs": false,
+  "renderNullAs": "–",
+  "defaultDateFormat": "yyyy-MM-dd",
+  "defaultDateTimeFormat": "yyyy-MM-dd HH:mm",
+  "refreshEnabled": true,
+  "refreshInterval": 2500,
+  "warnOnEmptyResult": false,
+  "prettyRenderInlineFields": true,
+  "tableIdColumnName": "파일",
+  "tableGroupColumnName": "그룹"
+}

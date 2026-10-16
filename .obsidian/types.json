@@ -1,0 +1,27 @@
+{
+  "types": {
+    "aliases": "aliases",
+    "cssclasses": "multitext",
+    "tags": "tags",
+    "type": "text",
+    "up": "text",
+    "daily": "text",
+    "week": "text",
+    "area": "text",
+    "source": "text",
+    "created": "date",
+    "date": "date",
+    "start": "date",
+    "end": "date",
+    "started": "date",
+    "finished": "date",
+    "deadline": "date",
+    "last_contact": "date",
+    "rating": "number",
+    "mood": "number",
+    "energy": "number",
+    "status": "text",
+    "author": "text",
+    "url": "text"
+  }
+}

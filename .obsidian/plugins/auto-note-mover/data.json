@@ -1,0 +1,21 @@
+{
+  "trigger_auto_manual": "Automatic",
+  "use_regex_to_check_for_tags": false,
+  "statusBar_trigger_indicator": true,
+  "folder_tag_pattern": [
+    { "folder": "40_Library/Books",     "tag": "#book",      "pattern": "" },
+    { "folder": "40_Library/Articles",  "tag": "#article",   "pattern": "" },
+    { "folder": "20_Journal",           "tag": "#journal",   "pattern": "" },
+    { "folder": "50_Ideas",             "tag": "#idea",      "pattern": "" },
+    { "folder": "30_Tasks/Projects",    "tag": "#project",   "pattern": "" },
+    { "folder": "70_People",            "tag": "#person",    "pattern": "" },
+    { "folder": "60_Areas",             "tag": "#area",      "pattern": "" },
+    { "folder": "80_Sources/GoodNotes", "tag": "#goodnotes", "pattern": "" }
+  ],
+  "use_regex_to_check_for_excluded_folder": false,
+  "excluded_folder": [
+    { "folder": "_System" },
+    { "folder": "10_Daily" },
+    { "folder": "90_Attachments" }
+  ]
+}
