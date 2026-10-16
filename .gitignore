@@ -11,3 +11,11 @@
 Thumbs.db
 __pycache__/
 *.pyc
+
+# YouKnow 연동: 키·캐시·백업 원본·사진 바이너리는 커밋하지 않음
+_System/Scripts/.env
+_System/Scripts/.yk_index.json
+98_연동/YouKnow/백업/*.json
+98_연동/YouKnow/백업/*.zip
+_Attachments/YouKnow/**
+!_Attachments/YouKnow/.gitkeep

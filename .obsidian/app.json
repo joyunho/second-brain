@@ -1,7 +1,7 @@
 {
   "newFileLocation": "folder",
   "newFileFolderPath": "00_Inbox",
-  "attachmentFolderPath": "90_Attachments",
+  "attachmentFolderPath": "_Attachments",
   "alwaysUpdateLinks": true,
   "useMarkdownLinks": false,
   "newLinkFormat": "shortest",

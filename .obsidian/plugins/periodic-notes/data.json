@@ -2,9 +2,34 @@
   "showGettingStartedBanner": false,
   "hasMigratedDailyNoteSettings": true,
   "hasMigratedWeeklyNoteSettings": true,
-  "daily":     { "enabled": true,  "format": "YYYY/MM/YYYY-MM-DD", "folder": "10_Daily",        "template": "_System/Templates/tpl-daily.md" },
-  "weekly":    { "enabled": true,  "format": "GGGG-[W]WW",         "folder": "10_Daily/Weekly", "template": "_System/Templates/tpl-weekly.md" },
-  "monthly":   { "enabled": false, "format": "YYYY-MM",            "folder": "10_Daily/Monthly", "template": "" },
-  "quarterly": { "enabled": false, "format": "YYYY-[Q]Q",          "folder": "",                "template": "" },
-  "yearly":    { "enabled": false, "format": "YYYY",               "folder": "",                "template": "" }
+  "daily": {
+    "enabled": true,
+    "format": "YYYY/MM/YYYY-MM-DD",
+    "folder": "10_오늘",
+    "template": "_System/Templates/tpl-daily.md"
+  },
+  "weekly": {
+    "enabled": true,
+    "format": "GGGG-[W]WW",
+    "folder": "10_오늘/Weekly",
+    "template": "_System/Templates/tpl-weekly.md"
+  },
+  "monthly": {
+    "enabled": false,
+    "format": "YYYY-MM",
+    "folder": "10_오늘/Monthly",
+    "template": ""
+  },
+  "quarterly": {
+    "enabled": false,
+    "format": "YYYY-[Q]Q",
+    "folder": "",
+    "template": ""
+  },
+  "yearly": {
+    "enabled": false,
+    "format": "YYYY",
+    "folder": "",
+    "template": ""
+  }
 }

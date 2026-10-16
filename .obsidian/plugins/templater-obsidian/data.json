@@ -1,7 +1,12 @@
 {
   "command_timeout": 5,
   "templates_folder": "_System/Templates",
-  "templates_pairs": [["", ""]],
+  "templates_pairs": [
+    [
+      "",
+      ""
+    ]
+  ],
   "trigger_on_file_creation": true,
   "auto_jump_to_cursor": true,
   "enable_system_commands": false,
@@ -9,22 +14,88 @@
   "user_scripts_folder": "_System/Scripts",
   "enable_folder_templates": true,
   "folder_templates": [
-    { "folder": "00_Inbox",             "template": "_System/Templates/tpl-inbox.md" },
-    { "folder": "10_Daily",             "template": "_System/Templates/tpl-daily.md" },
-    { "folder": "10_Daily/Weekly",      "template": "_System/Templates/tpl-weekly.md" },
-    { "folder": "20_Journal",           "template": "_System/Templates/tpl-journal.md" },
-    { "folder": "30_Tasks/Projects",    "template": "_System/Templates/tpl-project.md" },
-    { "folder": "40_Library/Books",     "template": "_System/Templates/tpl-book.md" },
-    { "folder": "40_Library/Articles",  "template": "_System/Templates/tpl-article.md" },
-    { "folder": "50_Ideas",             "template": "_System/Templates/tpl-idea.md" },
-    { "folder": "60_Areas",             "template": "_System/Templates/tpl-area.md" },
-    { "folder": "70_People",            "template": "_System/Templates/tpl-person.md" },
-    { "folder": "80_Sources/GoodNotes", "template": "_System/Templates/tpl-goodnotes.md" }
+    {
+      "folder": "00_Inbox",
+      "template": "_System/Templates/tpl-inbox.md"
+    },
+    {
+      "folder": "10_오늘",
+      "template": "_System/Templates/tpl-daily.md"
+    },
+    {
+      "folder": "10_오늘/Weekly",
+      "template": "_System/Templates/tpl-weekly.md"
+    },
+    {
+      "folder": "20_일정/일과",
+      "template": "_System/Templates/tpl-routine.md"
+    },
+    {
+      "folder": "30_할일/목록",
+      "template": "_System/Templates/tpl-task.md"
+    },
+    {
+      "folder": "40_프로젝트",
+      "template": "_System/Templates/tpl-project.md"
+    },
+    {
+      "folder": "50_일기",
+      "template": "_System/Templates/tpl-diary.md"
+    },
+    {
+      "folder": "50_일기/종류",
+      "template": "_System/Templates/tpl-facet.md"
+    },
+    {
+      "folder": "50_일기/기분",
+      "template": "_System/Templates/tpl-facet.md"
+    },
+    {
+      "folder": "50_일기/태그",
+      "template": "_System/Templates/tpl-facet.md"
+    },
+    {
+      "folder": "60_습관",
+      "template": "_System/Templates/tpl-habit.md"
+    },
+    {
+      "folder": "70_분야",
+      "template": "_System/Templates/tpl-area.md"
+    },
+    {
+      "folder": "80_문헌/책",
+      "template": "_System/Templates/tpl-book.md"
+    },
+    {
+      "folder": "80_문헌/글",
+      "template": "_System/Templates/tpl-article.md"
+    },
+    {
+      "folder": "80_문헌/굿노트",
+      "template": "_System/Templates/tpl-goodnotes.md"
+    },
+    {
+      "folder": "90_영구",
+      "template": "_System/Templates/tpl-idea.md"
+    },
+    {
+      "folder": "95_사람",
+      "template": "_System/Templates/tpl-person.md"
+    }
   ],
   "enable_file_templates": false,
-  "file_templates": [{ "regex": ".*", "template": "" }],
+  "file_templates": [
+    {
+      "regex": ".*",
+      "template": ""
+    }
+  ],
   "syntax_highlighting": true,
   "syntax_highlighting_mobile": false,
-  "enabled_templates_hotkeys": [""],
-  "startup_templates": [""]
+  "enabled_templates_hotkeys": [
+    ""
+  ],
+  "startup_templates": [
+    ""
+  ]
 }

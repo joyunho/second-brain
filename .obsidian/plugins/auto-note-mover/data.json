@@ -3,19 +3,70 @@
   "use_regex_to_check_for_tags": false,
   "statusBar_trigger_indicator": true,
   "folder_tag_pattern": [
-    { "folder": "40_Library/Books",     "tag": "#book",      "pattern": "" },
-    { "folder": "40_Library/Articles",  "tag": "#article",   "pattern": "" },
-    { "folder": "20_Journal",           "tag": "#journal",   "pattern": "" },
-    { "folder": "50_Ideas",             "tag": "#idea",      "pattern": "" },
-    { "folder": "30_Tasks/Projects",    "tag": "#project",   "pattern": "" },
-    { "folder": "70_People",            "tag": "#person",    "pattern": "" },
-    { "folder": "60_Areas",             "tag": "#area",      "pattern": "" },
-    { "folder": "80_Sources/GoodNotes", "tag": "#goodnotes", "pattern": "" }
+    {
+      "folder": "80_문헌/책",
+      "tag": "#책",
+      "pattern": ""
+    },
+    {
+      "folder": "80_문헌/글",
+      "tag": "#글",
+      "pattern": ""
+    },
+    {
+      "folder": "50_일기",
+      "tag": "#일기",
+      "pattern": ""
+    },
+    {
+      "folder": "90_영구",
+      "tag": "#영구",
+      "pattern": ""
+    },
+    {
+      "folder": "40_프로젝트",
+      "tag": "#프로젝트",
+      "pattern": ""
+    },
+    {
+      "folder": "95_사람",
+      "tag": "#사람",
+      "pattern": ""
+    },
+    {
+      "folder": "70_분야",
+      "tag": "#분야",
+      "pattern": ""
+    },
+    {
+      "folder": "30_할일/목록",
+      "tag": "#할일",
+      "pattern": ""
+    },
+    {
+      "folder": "60_습관",
+      "tag": "#습관",
+      "pattern": ""
+    },
+    {
+      "folder": "80_문헌/굿노트",
+      "tag": "#굿노트",
+      "pattern": ""
+    }
   ],
   "use_regex_to_check_for_excluded_folder": false,
   "excluded_folder": [
-    { "folder": "_System" },
-    { "folder": "10_Daily" },
-    { "folder": "90_Attachments" }
+    {
+      "folder": "_System"
+    },
+    {
+      "folder": "_Attachments"
+    },
+    {
+      "folder": "10_오늘"
+    },
+    {
+      "folder": "20_일정"
+    }
   ]
 }

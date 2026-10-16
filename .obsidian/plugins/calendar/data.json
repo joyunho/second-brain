@@ -6,5 +6,5 @@
   "localeOverride": "ko",
   "weeklyNoteFormat": "GGGG-[W]WW",
   "weeklyNoteTemplate": "_System/Templates/tpl-weekly.md",
-  "weeklyNoteFolder": "10_Daily/Weekly"
+  "weeklyNoteFolder": "10_오늘/Weekly"
 }

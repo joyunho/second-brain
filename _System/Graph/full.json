@@ -1,0 +1,44 @@
+{
+  "collapse-filter": false,
+  "search": "-path:_System -path:_Attachments -path:00_Inbox",
+  "showTags": false,
+  "showAttachments": false,
+  "hideUnresolved": true,
+  "showOrphans": true,
+  "collapse-color-groups": false,
+  "colorGroups": [
+    {
+      "query": "tag:#hub",
+      "color": {
+        "a": 1,
+        "rgb": 15680580
+      }
+    },
+    {
+      "query": "path:80_문헌 OR path:\"/자료/\"",
+      "color": {
+        "a": 1,
+        "rgb": 3718648
+      }
+    },
+    {
+      "query": "path:40_프로젝트 OR path:50_일기/종류 OR path:50_일기/기분 OR path:50_일기/태그 OR path:20_일정/일과",
+      "color": {
+        "a": 1,
+        "rgb": 16486972
+      }
+    }
+  ],
+  "collapse-display": false,
+  "showArrow": false,
+  "textFadeMultiplier": -1.2,
+  "nodeSizeMultiplier": 0.85,
+  "lineSizeMultiplier": 0.55,
+  "collapse-forces": false,
+  "centerStrength": 0.5,
+  "repelStrength": 7,
+  "linkStrength": 0.9,
+  "linkDistance": 80,
+  "scale": 0.6,
+  "close": false
+}
