@@ -232,9 +232,9 @@ bash _System/Graph/graph_preset.sh knowledge    # 또는 full
    | 3 | **Tasks** (`obsidian-tasks-plugin`) | 체크박스 할 일·📅·🆔 | 기본값. `[/]` `[-]` 상태는 코어 In-Progress/Cancelled |
    | 4 | **Auto Note Mover** | 본문 태그 → 폴더 | 규칙 10개(`#책 #글 #일기 #영구 #프로젝트 #사람 #분야 #할일 #습관 #굿노트`), 제외 `_System _Attachments 10_오늘 20_일정` |
    | 5 | **Periodic Notes** + **Calendar** | 일간/주간 생성 UI | 일간 폴더 `10_오늘`, 형식 `YYYY/MM/YYYY-MM-DD`; 주간 `10_오늘/Weekly`, `GGGG-[W]WW` |
-   | 6 | **ICS** | Google Calendar → 일간 `### 캘린더` | 비공개 iCal URL 등록 (3-4) |
+   | 6 | **ICS Calendar** (`ics`, 찾아보기 이름) | Google Calendar → 일간 `### 캘린더` | 비공개 iCal URL 등록 (3-4) |
    | 7 | **Advanced URI** (`obsidian-advanced-uri`) | 단축어 "뇌에 추가" | 3-6의 URL로 보낸 ⚡ 노트가 Inbox에 남지 않고 일간 노트/할 일로 나뉘는지(그냥 열리기만 하면 `data`의 Templater 명령 줄 누락) |
-   | 8 | **Obsidian Git** *(데스크톱)* | 자동 커밋/푸시 | 10분 간격. 가져오기 작업 중엔 잠시 끄기 |
+   | 8 | **Git** (`obsidian-git`, 찾아보기 이름은 'Git', 작성자 Vinzent) *(데스크톱)* | 자동 커밋/푸시 | 10분 간격. 가져오기 작업 중엔 잠시 끄기 |
    | 9 | **QuickAdd** *(선택)* | 단축키 한 줄 캡처 | 📋 Task Inbox로 Capture |
    | 10 | **Remotely Save** | 기기 간 동기화 (OneDrive 무료 5GB) | `OneDrive (for personal)` Auth, `Sync config dir`·`Sync underscore items` 켜기 ([[_System/Docs/동기화-설정|동기화 설정]] B절) |
 3. **CSS 스니펫** — 설정 › 모양 › CSS 스니펫 › `brain-graph` 켜기.
