@@ -19,3 +19,6 @@ _System/Scripts/.yk_index.json
 98_연동/YouKnow/백업/*.zip
 _Attachments/YouKnow/**
 !_Attachments/YouKnow/.gitkeep
+
+# iCloud 자리표시자·동기화 충돌 사본
+*.icloud

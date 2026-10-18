@@ -244,8 +244,8 @@ bash _System/Graph/graph_preset.sh knowledge    # 또는 full
 
 ---
 
-### 6-1. 여러 기기에서 같은 화면 보기
-맥북·아이폰·아이패드·데스크탑 어디서 열어도 최신 볼트가 보이게 하려면 **Obsidian Sync(실시간) + 맥북 Git(백업·자동화)** 조합을 씁니다. 기기별 설정 순서와 무료 대안은 [[_System/Docs/동기화-설정|동기화 설정]]에 있습니다. 볼트를 iCloud Drive 안에 두지 마세요(git과 충돌).
+### 6-1. 여러 기기에서 같은 화면 보기 (무료)
+기기가 전부 애플이면 **iCloud Drive**(git 저장소만 iCloud 밖에 두는 요령 필요), 윈도우·안드로이드가 섞여 있으면 **Remotely Save + OneDrive**. 둘 다 0원이고, 백업·자동화·Claude 채널은 맥북 한 대의 Git이 맡습니다. 기기별 순서는 [[_System/Docs/동기화-설정|동기화 설정]]에 있습니다. 볼트 폴더 안에 `.git` 폴더째로 iCloud에 두지 마세요.
 
 ---
 
