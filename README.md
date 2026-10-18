@@ -255,7 +255,7 @@ bash _System/Graph/graph_preset.sh knowledge    # 또는 full
 > **키 자동 설정**: `python3 -I _System/Scripts/setup_youknow_env.py` 를 한 번 실행하면 앱 번들에서 Supabase URL과 anon key를 읽어 `_System/Scripts/.env` 를 만들어 줍니다. 그 뒤 바로 `--supabase` 모드를 쓸 수 있습니다.
 
 
-### 7-1. 가져오기 3가지 모드 (`_System/Scripts/import_youknow.py`, Python 3.11+, 표준 라이브러리만)
+### 7-1. 가져오기 3가지 모드 (`_System/Scripts/import_youknow.py`, Python 3.9+, 표준 라이브러리만)
 ```bash
 cd <볼트 경로>
 # ① 권장 — Supabase REST: 12테이블 전부 + 휴지통 + 사진

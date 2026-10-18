@@ -12,7 +12,7 @@ YouKnow(Meta data 앱) → Obsidian 볼트 가져오기 (설계서 §7)
 원칙 (§7-3): 파일을 지우거나 옮기지 않음 · `%% yk:<블록>:start/end %%` 사이만 다시 씀 · importer 소유 키만 덮어씀 ·
 변경 없으면 파일을 열지 않음(yk_hash) · 사용자 편집 + 앱 변경이 겹치면 콜아웃으로 둘 다 보존 · 할 일은 볼트 쪽이 '더 진행'이면 볼트 승(yk_dirty).
 
-표준 라이브러리만 사용. Python 3.11+.
+표준 라이브러리만 사용. Python 3.9+ (macOS 기본 python3 로 동작).
     python3 -I _System/Scripts/import_youknow.py --backup 98_연동/YouKnow/백업/youknow-backup-2026-10-16.json --dry-run
 환경 변수(.env: _System/Scripts/.env): YK_SUPABASE_URL, YK_SUPABASE_ANON_KEY, YK_OWNER_ID, YK_WIDGET_KEY, YK_APP_URL, YK_TODAY(테스트용 오늘 날짜 고정)
 """
@@ -949,7 +949,8 @@ class Importer:
         if self.dry:
             return
         p.parent.mkdir(parents=True, exist_ok=True)
-        p.write_text(text, encoding="utf-8", newline="\n")
+        with open(p, "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(text)
 
     def exists(self, p: Path) -> bool:
         return p.exists() or rel(p, self.vault) in self.planned_paths
@@ -1794,7 +1795,8 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                         continue
                     if v in (None, "", []):
                         continue
-                    owned[f"기록_{re.sub(r'[:#\s\[\]]+', '_', str(k)).strip('_') or 'x'}"] = v
+                    label = re.sub(r"[:#\s\[\]]+", "_", str(k)).strip("_") or "x"  # f-string 안의 백슬래시는 3.12+ 전용이라 밖으로
+                    owned[f"기록_{label}"] = v
                 owned["photos"] = len(bases) if bases else None
                 owned["cover"] = f"[[{bases[0]}]]" if bases else None
                 owned["created"] = iso_date(r.get("created_at"), self.tz)
@@ -2597,7 +2599,8 @@ def export_diaries(vault: Path, out_dir: Path, export_all: bool, dry: bool) -> i
         print(f"  📤 {relp} → {target}")
         if not dry:
             out.mkdir(parents=True, exist_ok=True)
-            target.write_text(content, encoding="utf-8", newline="\n")
+            with open(target, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(content)
         n += 1
     print(f"일기 {n}편 내보냄 → {out}  (앱: 설정 → 데이터·백업 → 옵시디언 .md 가져오기)")
     return 0

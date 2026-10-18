@@ -538,7 +538,7 @@ body { --graph-node: #e8ecf5; --graph-line: rgba(170,178,192,0.22); --graph-line
 
 ## 7. `_System/Scripts/import_youknow.py` 명세
 
-Python 3.11+, 표준 라이브러리만(json, re, pathlib, urllib, hashlib, zoneinfo, zipfile, argparse, datetime). frontmatter는 자체 직렬화기로 쓰고, 읽을 때는 `---` 블록을 **인라인 리스트와 블록 리스트(`- `) 둘 다** 파싱하는 관용 파서를 쓴다(Obsidian 속성 편집기가 블록 리스트로 다시 쓰기 때문).
+Python 3.9+, 표준 라이브러리만(json, re, pathlib, urllib, hashlib, zoneinfo, zipfile, argparse, datetime). frontmatter는 자체 직렬화기로 쓰고, 읽을 때는 `---` 블록을 **인라인 리스트와 블록 리스트(`- `) 둘 다** 파싱하는 관용 파서를 쓴다(Obsidian 속성 편집기가 블록 리스트로 다시 쓰기 때문).
 
 ### 7-1. CLI
 ```
