@@ -97,7 +97,7 @@ ${M("habits", "end")}
 ${F}dataview
 LIST FROM "50_일기" WHERE date = date(${date})
 ${F}
-· [[일기|오늘 일기 쓰기 →]]
+· 일기 쓰기: Cmd+N → 📔 일기 (허브 링크 없음)
 
 ## 📝 메모
 - 

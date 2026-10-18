@@ -446,7 +446,7 @@ end_time `""`은 `—`. 일과 제목이 습관 노트와 같으면 링크.
 
 - 폴더명에 띄어쓰기가 없으므로 `path:` 토큰은 따옴표 없이 동작한다. `"/자료/"`만 따옴표(폴더 경계 `/자료/`를 부분 문자열로 매칭해 "자료 조사" 같은 할 일 제목이 파랑이 되지 않게).
 - 🗂️ 프로젝트 허브는 40_프로젝트에 있지만 1순위에서 빨강. 📔 일기 허브는 50_일기 루트라 3순위 하위폴더 질의에 걸리지 않음(1순위에서 빨강).
-- `path:50_일기/종류/일반`은 모든 일반 일기가 가리켜 degree가 크다. 허브급이지만 주황 그대로 둔다(하나뿐이라 "큰 주황 점" 하나는 스크린샷 느낌을 해치지 않음). 더 줄이고 싶으면 종류 링크를 general에서 생략하는 옵션 `--no-link-general-type`.
+- `path:50_일기/종류/일반`은 모든 일반 일기가 가리켜 degree가 크다. 허브급이지만 주황 그대로 둔다(하나뿐이라 "큰 주황 점" 하나는 스크린샷 느낌을 해치지 않음). 더 줄이고 싶으면 종류 링크를 general에서 생략하는 옵션 `--link-general-type`.
 
 ### 4-3. `.obsidian/snippets/brain-graph.css` 변경 (3곳)
 ```css
@@ -529,7 +529,7 @@ body { --graph-node: #e8ecf5; --graph-line: rgba(170,178,192,0.22); --graph-line
 `import_goodnotes.py` 유지, 출력 `80_문헌/굿노트/<노트북>.md`, PDF `_Attachments/GoodNotes/`. tpl-goodnotes에서 유형 태그 제거·`type: 굿노트`·`area` 질문.
 
 ### 6-5. 단축어 / 위젯
-① YouKnow "YouKnow에 추가"(Siri)·Scriptable 위젯 그대로(→ 앱 → 야간 import). ② Obsidian 직행 단축어 "뇌에 추가"(Advanced URI 플러그인 추가 설치): `obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/빠른입력 {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}`(`data`는 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>` 로 시작 — Templater 폴더 템플릿은 빈 파일에만 적용되므로 이 줄이 tpl-inbox를 실행시킨다) → tpl-inbox가 파일명이 `빠른입력`으로 시작하면 메뉴 없이 capture.js로 본문을 바로 파싱·라우팅. 공유 시트 URL은 12번 자료 분기.
+① YouKnow "YouKnow에 추가"(Siri)·Scriptable 위젯 그대로(→ 앱 → 야간 import). ② Obsidian 직행 단축어 "뇌에 추가"(Advanced URI 플러그인 추가 설치): `obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/빠른입력 {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}`(`data`는 Templater 명령 줄 `tp.file.include`로 tpl-inbox 템플릿을 불러오는 Templater 한 줄(위 URL의 `data=` 앞부분을 디코딩한 것) 로 시작 — Templater 폴더 템플릿은 빈 파일에만 적용되므로 이 줄이 tpl-inbox를 실행시킨다) → tpl-inbox가 파일명이 `빠른입력`으로 시작하면 메뉴 없이 capture.js로 본문을 바로 파싱·라우팅. 공유 시트 URL은 12번 자료 분기.
 
 ### 6-6. 📋 Task Inbox · 일간 체크박스
 노트 없는 할 일은 계속 허용. 주간 리뷰에서 ⚡로 승격하거나 그대로 둠. ✅ 할 일 허브와 일간 노트는 Dataview(노트형)와 Tasks 쿼리(체크박스형)를 둘 다 보여 준다.
@@ -546,7 +546,7 @@ python3 _System/Scripts/import_youknow.py --supabase                       # 권
 python3 _System/Scripts/import_youknow.py --backup 98_연동/YouKnow/백업/youknow-backup-2026-10-16.json
 python3 _System/Scripts/import_youknow.py --zip ~/Downloads/youknow-obsidian-2026-10-16.zip
 python3 _System/Scripts/import_youknow.py --export-diaries-for-youknow ~/Desktop/to-youknow/
-옵션: --dry-run · --tz Asia/Seoul · --since YYYY-MM-DD(일간 스켈레톤 하한; 기본 = 가장 오래된 행 날짜) · --no-fill-days · --no-photos · --no-link-general-type · --vault <path>(기본 parents[2]) · --csv <file>(미리보기만) · --push-pending(yk_pending 노트를 /api/capture로 재전송)
+옵션: --dry-run · --tz Asia/Seoul · --since YYYY-MM-DD(일간 스켈레톤 하한; 기본 = 가장 오래된 행 날짜) · --no-fill-days · --no-photos · --link-general-type · --vault <path>(기본 parents[2]) · --csv <file>(미리보기만) · --push-pending(yk_pending 노트를 /api/capture로 재전송)
 --supabase + --backup 동시: REST 우선, 백업은 REST 실패 테이블만 보충.
 ```
 
@@ -646,6 +646,6 @@ settings → facet(종류/기분/태그) → projects(+70_분야) → project_se
 5. 앱 분야 기본값 "개인"을 70_분야 노트로 둘지(설계는 둠), 기존 영역 이름(배움 vs 앱의 공부 등)을 `AREA_ALIASES`로 합칠지.
 6. `--since` 하한: 모든 과거 데이터 날짜부터 일간 스켈레톤을 만들지, 최근 1년만 만들지.
 7. 기존 20_Journal의 mood/energy 1~5 숫자 체계 — `mood_score`로 환산해 유지하는 것으로 충분한지, `energy·weather`를 계속 쓸지.
-8. 일반 종류 일기의 `종류: [[일반]]` 링크를 둘지(하나의 큰 주황 노드) 뺄지(`--no-link-general-type`).
+8. 일반 종류 일기의 `종류: [[일반]]` 링크를 둘지(하나의 큰 주황 노드) 뺄지(`--link-general-type`).
 9. 날짜 기준: 앱은 기기 로컬, Siri 경로는 KST 기본. 볼트 `--tz`를 Asia/Seoul로 두어도 되는지(해외 체류 시 하루 어긋남 가능).
 10. GoodNotes 백업 클라우드(Google Drive / Dropbox / OneDrive) — import_goodnotes `--src` 기본값.

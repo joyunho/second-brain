@@ -1,10 +1,10 @@
 {
   "collapse-filter": false,
-  "search": "-path:_System -path:_Attachments -path:00_Inbox",
+  "search": "-path:_System -path:_Attachments -path:00_Inbox -path:README.md",
   "showTags": false,
   "showAttachments": false,
   "hideUnresolved": true,
-  "showOrphans": true,
+  "showOrphans": false,
   "collapse-color-groups": false,
   "colorGroups": [
     {
@@ -31,9 +31,9 @@
   ],
   "collapse-display": false,
   "showArrow": false,
-  "textFadeMultiplier": -1.2,
-  "nodeSizeMultiplier": 0.85,
-  "lineSizeMultiplier": 0.55,
+  "textFadeMultiplier": -2.2,
+  "nodeSizeMultiplier": 0.7,
+  "lineSizeMultiplier": 0.45,
   "collapse-forces": false,
   "centerStrength": 0.5,
   "repelStrength": 7,

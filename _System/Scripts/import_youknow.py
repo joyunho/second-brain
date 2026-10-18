@@ -78,6 +78,9 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 MARK_START = "%% yk:{name}:start %%"
 MARK_END = "%% yk:{name}:end %%"
 CALLOUT_TITLE = "> [!note] 📲 YouKnow에서 바뀐 내용 ({date})"
+# 일간 노트 → 📔 일기 허브 링크(초기 골격)는 날짜 노트 수백 개가 허브 하나를 가리켜 그래프에 거대한 별을 만들었다 → 안내 문구로 교체(기존 노트는 run_daily 가 1회 교체)
+DAILY_HUB_LINK_OLD = "· [[일기|오늘 일기 쓰기 →]]"
+DAILY_HUB_LINK_NEW = "· 일기 쓰기: Cmd+N → 📔 일기 (허브 링크 없음)"
 
 # importer 소유 frontmatter 키(§7-3 2a) — 이 밖의 키는 사용자 소유라 보존된다
 OWNED_KEYS = {
@@ -1205,7 +1208,7 @@ class Importer:
             if not isinstance(t, dict):
                 continue
             name = "일반" if t.get("id") == "general" else E(t.get("name") or t.get("id") or "기록")
-            if t.get("id") == "general" and self.args.no_link_general_type:
+            if t.get("id") == "general" and (not self.args.link_general_type):
                 pass
             path = folder / f"{name}.md"
             seen_type_files.add(path.name)
@@ -1778,7 +1781,7 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                 photos = [p for p in photos if photo_base(p.get("photo_path"))]
                 bases = [photo_base(p.get("photo_path")) for p in photos]
                 owned: dict = {"type": "일기", "title": title, "date": date_s, "daily": f"[[{date_s}]]", "diary_type": tname}
-                owned["종류"] = None if (tname == "일반" and self.args.no_link_general_type) else f"[[{tname}]]"
+                owned["종류"] = None if (tname == "일반" and (not self.args.link_general_type)) else f"[[{tname}]]"
                 ms = MOOD_MAP.get(mood)
                 owned["mood"] = mood or None
                 owned["mood_score"] = ms[1] if ms else None
@@ -2072,7 +2075,7 @@ SORT priority DESC
 {F}dataview
 LIST FROM "50_일기" WHERE date = date({date})
 {F}
-· [[일기|오늘 일기 쓰기 →]]
+· 일기 쓰기: Cmd+N → 📔 일기 (허브 링크 없음)
 
 ## 📝 메모
 - 
@@ -2200,6 +2203,10 @@ SORT file.ctime ASC
             self.counts.add("일간", "새로")
             return
         text = self.read(path)
+        if DAILY_HUB_LINK_OLD in text:   # 1회 마이그레이션: 허브로 가는 링크 줄 제거(그래프 별 방지)
+            text = text.replace(DAILY_HUB_LINK_OLD, DAILY_HUB_LINK_NEW)
+            self.write(path, text)
+            self.log.append(f"  🔧 {relp}: 일기 허브 링크 줄을 안내 문구로 교체")
         fm, body = fm_load(text)
         managed = json.dumps({"fm": owned, "blocks": [(n, c) for n, c, _ in blocks], "extra": hash_extra}, ensure_ascii=False, sort_keys=True)
         new_hash = sha1(managed)
@@ -2522,7 +2529,7 @@ def run_zip_import(imp: Importer) -> int:
         ms = MOOD_MAP.get(mood)
         kind = (types_by_name.get(tname) or {}).get("kind", "workout" if tname == "운동" else "general")
         fm = {"type": "일기", "title": r["title"], "date": date_s, "daily": f"[[{date_s}]]", "diary_type": tname,
-              "종류": None if (tname == "일반" and imp.args.no_link_general_type) else f"[[{tname}]]",
+              "종류": None if (tname == "일반" and (not imp.args.link_general_type)) else f"[[{tname}]]",
               "mood": mood or None, "mood_score": ms[1] if ms else None, "기분": f"[[{E(mood)}]]" if mood else None,
               "tags": r["tags"], "태그": [f"[[{E(t)}]]" for t in r["tags"]] or None}
         if kind == "workout":
@@ -2633,7 +2640,7 @@ def build_parser() -> argparse.ArgumentParser:
     ap.add_argument("--since", metavar="YYYY-MM-DD", help="일간 스켈레톤 하한 (기본: 가장 오래된 행 날짜)")
     ap.add_argument("--no-fill-days", action="store_true", help="데이터 있는 날만 일간 노트 생성")
     ap.add_argument("--no-photos", action="store_true", help="사진 바이너리를 받지 않음")
-    ap.add_argument("--no-link-general-type", action="store_true", help="일반 종류 일기에 종류: [[일반]] 링크를 넣지 않음")
+    ap.add_argument("--link-general-type", action="store_true", help="일반 종류 일기에도 종류: [[일반]] 링크를 넣음 (기본은 넣지 않음 — 일반 일기 수백 개가 노드 하나를 가리켜 큰 별이 되는 것을 막기 위해)")
     ap.add_argument("--vault", default=str(DEFAULT_VAULT), help="볼트 경로 (기본: 스크립트의 두 단계 위)")
     ap.add_argument("--csv", metavar="CSV", help="할 일 CSV 미리보기만 (쓰기 거부)")
     ap.add_argument("--push-pending", action="store_true", help="채택 실패한 yk_pending 할 일을 /api/capture 로 한 번 보낸다(보낸 노트엔 yk_pushed 날짜가 남아 다시 보내지 않음)")

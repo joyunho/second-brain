@@ -122,7 +122,7 @@ YouKnow를 거치지 않고 옵시디언에 바로 넣는 길. Advanced URI 플�
 ```
 obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/빠른입력 {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}
 ```
-`data`는 반드시 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>`(위처럼 URL 인코딩)로 시작하고 그 다음 줄에 텍스트가 옵니다 — Templater의 폴더 템플릿은 **빈 파일**에만 적용되고, Advanced URI는 파일을 텍스트와 함께 만들기 때문에 이 줄이 없으면 `tpl-inbox`가 아예 실행되지 않고 ⚡ 노트가 Inbox에 날것으로 남습니다. 단축어에서 `{{텍스트}}`는 "URL 인코딩" 동작을 거쳐 넣으세요(`#프로젝트`·`9:30`·`&`가 살아남게). 파일명이 `빠른입력`으로 시작하면 `tpl-inbox`가 메뉴 없이 본문을 `capture.js`로 바로 해석·분배합니다(명령 줄은 본문에서 제외). 공유 시트의 URL은 12번(자료) 분기로 보내면 됩니다.
+`data`는 반드시 Templater 명령 줄 `tp.file.include`로 tpl-inbox 템플릿을 불러오는 Templater 한 줄(위 URL의 `data=` 앞부분을 디코딩한 것)(위처럼 URL 인코딩)로 시작하고 그 다음 줄에 텍스트가 옵니다 — Templater의 폴더 템플릿은 **빈 파일**에만 적용되고, Advanced URI는 파일을 텍스트와 함께 만들기 때문에 이 줄이 없으면 `tpl-inbox`가 아예 실행되지 않고 ⚡ 노트가 Inbox에 날것으로 남습니다. 단축어에서 `{{텍스트}}`는 "URL 인코딩" 동작을 거쳐 넣으세요(`#프로젝트`·`9:30`·`&`가 살아남게). 파일명이 `빠른입력`으로 시작하면 `tpl-inbox`가 메뉴 없이 본문을 `capture.js`로 바로 해석·분배합니다(명령 줄은 본문에서 제외). 공유 시트의 URL은 12번(자료) 분기로 보내면 됩니다.
 
 ---
 
@@ -268,7 +268,7 @@ python3 -I _System/Scripts/import_youknow.py --backup "98_연동/YouKnow/백업/
 # ③ 앱 "마크다운 볼트 내보내기(.zip)" — 일기만 (fallback)
 python3 -I _System/Scripts/import_youknow.py --zip ~/Downloads/youknow-obsidian-2026-10-16.zip
 ```
-옵션: `--dry-run` · `--tz Asia/Seoul` · `--since YYYY-MM-DD`(일간 스켈레톤 하한, 기본 = 가장 오래된 행 날짜) · `--no-fill-days` · `--no-photos` · `--no-link-general-type` · `--vault <path>` · `--csv <file>`(미리보기만, 쓰기 거부) · `--push-pending` · `--rename-follow` · `--all`(역방향 내보내기에서 `yk_id` 있는 일기도 포함) · `--verbose`. `--supabase --backup` 동시 지정 시 REST 우선, 실패한 테이블만 백업으로 보충.
+옵션: `--dry-run` · `--tz Asia/Seoul` · `--since YYYY-MM-DD`(일간 스켈레톤 하한, 기본 = 가장 오래된 행 날짜) · `--no-fill-days` · `--no-photos` · `--link-general-type` · `--vault <path>` · `--csv <file>`(미리보기만, 쓰기 거부) · `--push-pending` · `--rename-follow` · `--all`(역방향 내보내기에서 `yk_id` 있는 일기도 포함) · `--verbose`. `--supabase --backup` 동시 지정 시 REST 우선, 실패한 테이블만 백업으로 보충.
 
 ### 7-2. `.env` (`_System/Scripts/.env`, .gitignore)
 ```
@@ -350,7 +350,7 @@ python3 -I _System/Scripts/import_youknow.py --export-diaries-for-youknow ~/Desk
 5. **앱 기본 분야 "개인"**을 70_분야 노트로 둘지(설계는 둠), 기존 분야 이름(배움 vs 앱의 공부 등)을 `AREA_ALIASES`로 합칠지.
 6. **`--since` 하한** — 모든 과거 데이터부터 일간 스켈레톤을 만들지, 최근 1년만.
 7. **옛 일기의 mood/energy 1~5 숫자** — `mood_score`로 환산해 유지하면 충분한지, `energy`·`weather`를 계속 쓸지.
-8. **일반 종류 일기의 `종류: [[일반]]` 링크** — 둘지(큰 주황 노드 하나) 뺄지(`--no-link-general-type`).
+8. **일반 종류 일기의 `종류: [[일반]]` 링크** — 기본은 넣지 않습니다(일반 일기 수백 개가 노드 하나에 매달려 큰 별이 됨). 원하면 `--link-general-type`.
 9. **날짜 기준** — 앱은 기기 로컬, Siri 경로는 KST. 볼트 `--tz Asia/Seoul`로 두어도 되는지(해외 체류 시 하루 어긋남).
 10. **GoodNotes 백업 클라우드** — Google Drive / Dropbox / OneDrive 중 무엇인지 → `import_goodnotes.py --src` 기본값.
 11. **더 모을 소스** — Kindle·밀리의서재 하이라이트, 유튜브, 트위터/X 북마크 등. 지금은 80_문헌/글에 Web Clipper로 넣는 것만 가정.

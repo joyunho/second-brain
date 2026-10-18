@@ -48,7 +48,7 @@ grep -qE '일기 새로 2 · 갱신 0 · 건너뜀 1 / 할 일 새로 4' "$WORK/
 echo "▶ 생성 파일·frontmatter 검사"
 D1="50_일기/2026/2026-10-14 일기.md"; D2="50_일기/2026/2026-10-15 운동.md"
 assert_file "$D1"; assert_file "$D2"; assert_nofile "50_일기/2026/2026-10-10 일기.md"
-assert_grep "$D1" 'type: 일기'; assert_grep "$D1" 'mood_score: 4'; assert_grep "$D1" '종류: "[[일반]]"'; assert_grep "$D1" '기분: "[[좋음]]"'
+assert_grep "$D1" 'type: 일기'; assert_grep "$D1" 'mood_score: 4'; assert_nogrep "$D1" '종류:'; assert_grep "$D1" '기분: "[[좋음]]"'
 assert_grep "$D1" 'tags: [운동, 친구]'; assert_grep "$D1" '태그: ["[[운동]]", "[[친구]]"]'; assert_grep "$D1" '기록_수면: 7'
 assert_nogrep "$D1" 'up:'
 assert_grep "$D2" 'parts: [가슴, 등]'; assert_grep "$D2" 'duration_min: 45'; assert_grep "$D2" 'intensity: 보통'; assert_grep "$D2" 'photos: 2'
