@@ -117,6 +117,9 @@ Google Calendar(웹) › 캘린더 설정 › **비공개 주소(iCal)** 를 ICS
 ### 3-5. GoodNotes 5
 GoodNotes › 설정 › 자동 백업(PDF) → 클라우드 폴더 → `python3 -I _System/Scripts/import_goodnotes.py --src "~/Google Drive/GoodNotes"` → `80_문헌/굿노트/<노트북>.md`(PDF 임베드, `type: 굿노트`), PDF는 `_Attachments/GoodNotes/`. 이미 있는 .md는 건드리지 않습니다.
 
+### 3-5′. 홈 화면 위젯 (Scriptable)
+YouKnow 위젯을 한눈에 보이게 다시 짠 스크립트가 [[_System/Docs/YouKnow-위젯|YouKnow 위젯]]에 있습니다. 휴대폰 옵시디언에서 코드 블록을 복사해 Scriptable의 `YouKnow` 스크립트에 붙여넣으면 됩니다.
+
 ### 3-6. iOS 단축어 "뇌에 추가" (Advanced URI)
 YouKnow를 거치지 않고 옵시디언에 바로 넣는 길. Advanced URI 플러그인을 설치하고 단축어에서 아래 URL을 엽니다:
 ```
