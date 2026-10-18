@@ -244,6 +244,11 @@ bash _System/Graph/graph_preset.sh knowledge    # 또는 full
 
 ---
 
+### 6-1. 여러 기기에서 같은 화면 보기
+맥북·아이폰·아이패드·데스크탑 어디서 열어도 최신 볼트가 보이게 하려면 **Obsidian Sync(실시간) + 맥북 Git(백업·자동화)** 조합을 씁니다. 기기별 설정 순서와 무료 대안은 [[_System/Docs/동기화-설정|동기화 설정]]에 있습니다. 볼트를 iCloud Drive 안에 두지 마세요(git과 충돌).
+
+---
+
 ## 7. YouKnow 연동
 
 ### 7-1. 가져오기 3가지 모드 (`_System/Scripts/import_youknow.py`, Python 3.11+, 표준 라이브러리만)
