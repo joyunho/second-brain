@@ -92,10 +92,22 @@ OWNED_KEYS = {
 # ──────────────────────────────────────────────────────────────────────────────
 # 작은 도우미
 # ──────────────────────────────────────────────────────────────────────────────
+EMOJI = re.compile(
+    "[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B05-\u2B07\u2B1B\u2B1C\u2B50\u2B55\u2194-\u2199\u21A9\u21AA"
+    "\u231A\u231B\u2328\u23CF\u23E9-\u23F3\u23F8-\u23FA\u25AA\u25AB\u25B6\u25C0\u25FB-\u25FE\u24C2"
+    "\u3030\u303D\u3297\u3299\u00A9\u00AE\u2122\u2139\u203C\u2049\uFE0F\u200D\u20E3\U000E0020-\U000E007F]"
+)
+# 허브 노트의 파일명(파일명에 이모지를 쓰지 않는다 — Dropbox 동기화(Remotely Save)가 이모지 파일명을 거부). 행 노트가 같은 이름이면 ' (노트)'를 붙여 링크 충돌을 막는다
+RESERVED_BASENAMES = {"Brain", "Inbox", "오늘", "일정", "할 일", "Task Inbox", "프로젝트", "일기", "습관", "분야", "문헌", "영구 노트", "사람", "연동", "Health"}
+
+
 def E(s) -> str:
-    """앱과 동일한 파일명 sanitizer(+ 앞뒤 점 제거: `.env`처럼 점으로 시작하는 파일은 Obsidian 이 숨기고 인덱스도 건너뛴다)."""
+    """앱과 동일한 파일명 sanitizer(+ 앞뒤 점 제거, 이모지 제거, 허브 이름 회피)."""
     t = FORBIDDEN.sub(" ", str(s if s is not None else ""))
+    t = EMOJI.sub("", t)
     t = re.sub(r"\s+", " ", t).strip().strip(". ").strip()
+    if t in RESERVED_BASENAMES:
+        t += " (노트)"
     return t or "이름 없음"
 
 
@@ -1203,7 +1215,7 @@ class Importer:
             owned["yk_deleted"] = None
             tpl = t.get("template") or ""
             blocks = [("template", tpl, "## 템플릿")]
-            self.upsert_note(table="facet", path=path, yk_id=None, owned=owned, blocks=blocks, up="[[📔 일기]]",
+            self.upsert_note(table="facet", path=path, yk_id=None, owned=owned, blocks=blocks, up="[[일기]]",
                              create_fn=lambda fm, b, name=name, tpl=tpl: self.tpl_facet("종류", name, fm, tpl))
         self.retire_facets(folder, seen_type_files, "종류")
         # 기분
@@ -1215,7 +1227,7 @@ class Importer:
             seen.add(path.name)
             em, score, col = MOOD_MAP.get(m, (None, None, None))
             owned = {"type": "기분", "emoji": em, "color": col or "#94a3b8", "score": score, "yk_deleted": None}
-            self.upsert_note(table="facet", path=path, yk_id=None, owned=owned, blocks=[], up="[[📔 일기]]",
+            self.upsert_note(table="facet", path=path, yk_id=None, owned=owned, blocks=[], up="[[일기]]",
                              create_fn=lambda fm, b, name=name: self.tpl_facet("기분", name, fm, None))
         self.retire_facets(folder, seen, "기분")
         # 태그 = settings ∪ 실사용
@@ -1226,7 +1238,7 @@ class Importer:
             path = folder / f"{name}.md"
             seen.add(path.name)
             owned = {"type": "태그", "source": "settings" if tg in tags else "used", "yk_deleted": None}
-            self.upsert_note(table="facet", path=path, yk_id=None, owned=owned, blocks=[], up="[[📔 일기]]",
+            self.upsert_note(table="facet", path=path, yk_id=None, owned=owned, blocks=[], up="[[일기]]",
                              create_fn=lambda fm, b, name=name: self.tpl_facet("태그", name, fm, None))
         self.retire_facets(folder, seen, "태그")
 
@@ -1286,7 +1298,7 @@ if (rows.length) dv.table(["월", "일기 수"], rows); else dv.paragraph("_아�
             return name
         em = emoji_for(name, "")
         F = "```"
-        fm = {"type": "분야", "tags": ["hub"], "up": "[[🧭 분야]]", "emoji": em, "created": self.today_s, "yk_area": True}
+        fm = {"type": "분야", "tags": ["hub"], "up": "[[분야]]", "emoji": em, "created": self.today_s, "yk_area": True}
         text = f"""{fm_dump(fm)}# {em} {name}
 
 > [!abstract] 이 분야에서 지키고 싶은 기준
@@ -1393,7 +1405,7 @@ LIMIT 30
                 legacy = (r.get("resources") or "").rstrip()
                 if legacy or (path.exists() and get_block(self.read(path), "resources_legacy") is not None):
                     blocks.append(("resources_legacy", legacy, "### 메모 (예전 자료)"))
-                self.upsert_note(table="프로젝트", path=path, yk_id=pid, owned=owned, blocks=blocks, up="[[🗂️ 프로젝트]]",
+                self.upsert_note(table="프로젝트", path=path, yk_id=pid, owned=owned, blocks=blocks, up="[[프로젝트]]",
                                  free_text={"resources_legacy"}, new_title=r.get("name") or "새 프로젝트",
                                  create_fn=lambda fm, b, r=r, name=name, em=em, area=area, folder=folder: self.tpl_project(fm, b, r, name, em, area, folder.name))
                 self.project_paths[pid] = self.last_path
@@ -1892,7 +1904,7 @@ dv.paragraph("█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pc
                     "daily": f"[[{created}]]" if created else None, "yk_id": hid, "yk_updated": r.get("updated_at") or r.get("created_at"),
                     "yk_url": f"{self.app_url}/#/habits", "yk_missing": None,
                 }
-                self.upsert_note(table="습관", path=path, yk_id=hid, owned=owned, blocks=[], up="[[🔁 습관]]", app_tags=["hub"], new_title=name,
+                self.upsert_note(table="습관", path=path, yk_id=hid, owned=owned, blocks=[], up="[[습관]]", app_tags=["hub"], new_title=name,
                                  create_fn=lambda fm, b, name=name: self.tpl_habit(fm, name))
                 self.habit_names[hid] = self.last_path.stem
                 self.habit_note_names.add(self.last_path.stem)
@@ -1990,7 +2002,7 @@ LIST FROM "10_오늘" WHERE contains(string(weekday), "{name}") SORT date DESC L
                 pass
             else:
                 continue
-            self.upsert_note(table="일과", path=path, yk_id=None, owned=owned, blocks=blocks, up="[[🗓️ 일정]]",
+            self.upsert_note(table="일과", path=path, yk_id=None, owned=owned, blocks=blocks, up="[[일정]]",
                              create_fn=lambda fm, b, name=name: self.tpl_weekday(fm, b, name))
 
     # ── 8. 일간 스켈레톤 + day_plans + habit_checks ────────────────────────
@@ -2058,7 +2070,7 @@ SORT priority DESC
 {F}dataview
 LIST FROM "50_일기" WHERE date = date({date})
 {F}
-· [[📔 일기|오늘 일기 쓰기 →]]
+· [[일기|오늘 일기 쓰기 →]]
 
 ## 📝 메모
 - 
@@ -2294,7 +2306,7 @@ SORT file.ctime ASC
         }
         counts = {t: len(self.src.rows(t)) for t in TABLES_12 if self.src.present(t) and t != "settings"}
         fm = {
-            "type": "연동", "up": "[[🔌 연동]]", "site_name": s.get("site_name") or "YouKnow Meta data",
+            "type": "연동", "up": "[[연동]]", "site_name": s.get("site_name") or "YouKnow Meta data",
             "moods": [str(m) for m in (s.get("moods") or DEFAULT_MOODS)], "tags": [str(t) for t in (s.get("tags") or DEFAULT_TAGS)],
             "diary_types": [("일반" if t.get("id") == "general" else str(t.get("name") or t.get("id"))) for t in types if isinstance(t, dict)],
             "flags": [k for k, v in flags.items() if v],

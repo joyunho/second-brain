@@ -25,39 +25,39 @@
 
 ```
 second-brain/
-├── 🧠 Brain.md                      루트 허브 — 12개 화면 허브로 가는 중심
-├── 00_Inbox/📥 Inbox.md             Ctrl+N 기본 생성 폴더. 라우터가 여기서 분배. 그래프 제외
+├── Brain.md                      루트 허브 — 12개 화면 허브로 가는 중심
+├── 00_Inbox/Inbox.md             Ctrl+N 기본 생성 폴더. 라우터가 여기서 분배. 그래프 제외
 ├── 10_오늘/                         (#/today) 시간축
-│   ├── ☀️ 오늘.md                    허브
+│   ├── 오늘.md                    허브
 │   ├── YYYY/MM/YYYY-MM-DD.md        일간 노트 = 그날의 Today 화면 (하루 계획·습관 체크 관리 블록)
 │   └── Weekly/GGGG-Www.md           주간 리뷰 (= 주 보기)
 ├── 20_일정/                         (#/schedule)
-│   ├── 🗓️ 일정.md                    허브 — 이번 주 계획 완료율, 요일 노트, 캘린더 안내
+│   ├── 일정.md                    허브 — 이번 주 계획 완료율, 요일 노트, 캘린더 안내
 │   └── 일과/일요일.md … 토요일.md    요일별 일과표 7개 (routine_blocks)
 ├── 30_할일/                         (#/tasks)
-│   ├── ✅ 할 일.md                   허브 — 목록(우선순위 5→1)·칸반(상태 4열)·마감
-│   ├── 📋 Task Inbox.md             노트 없는 한 줄 체크박스 (Tasks 플러그인)
+│   ├── 할 일.md                   허브 — 목록(우선순위 5→1)·칸반(상태 4열)·마감
+│   ├── Task Inbox.md             노트 없는 한 줄 체크박스 (Tasks 플러그인)
 │   └── 목록/<제목>.md                할 일 1개 = 노트 1개 (세부 메모 화면)
 ├── 40_프로젝트/                     (#/projects)
-│   ├── 🗂️ 프로젝트.md                허브 — 기간·진행률·마감까지·다음 행동 표
+│   ├── 프로젝트.md                허브 — 기간·진행률·마감까지·다음 행동 표
 │   └── <이름>/<이름>.md             프로젝트 folder note (묶음·체크리스트 본문)
 │       └── 자료/<제목>.md            프로젝트 자료 1개 = 노트 1개 → 파랑
 ├── 50_일기/                         (#/daily)
-│   ├── 📔 일기.md                    허브 — 월 캘린더·목록·종류 칩
+│   ├── 일기.md                    허브 — 월 캘린더·목록·종류 칩
 │   ├── YYYY/YYYY-MM-DD 일기.md       일반 종류 일기 / "YYYY-MM-DD 운동.md" 그 외 종류
 │   └── 종류/ 기분/ 태그/             facet 노트 (앱 설정값) → 주황
 ├── 60_습관/                         (#/habits)
-│   ├── 🔁 습관.md                    허브
+│   ├── 습관.md                    허브
 │   └── <습관명>.md                  습관 1개 = 노트 1개 (일간 노트 수백 개가 가리킴 → 빨강)
-├── 70_분야/🧭 분야.md + 건강 커리어 돈 관계 배움 개인.md    프로젝트·책·영구 노트가 매달리는 중간 마디 → 빨강
+├── 70_분야/분야.md + 건강 커리어 돈 관계 배움 개인.md    프로젝트·책·영구 노트가 매달리는 중간 마디 → 빨강
 ├── 80_문헌/                         문헌 노트 → 파랑
-│   ├── 📚 문헌.md                    허브
+│   ├── 문헌.md                    허브
 │   ├── 책/  글/                     독후감 · 아티클/영상/강의
 │   └── 굿노트/<노트북>.md            GoodNotes PDF 노트
-├── 90_영구/💎 영구 노트.md           내 생각 = 영구 노트 (연결 2개 이상 강제)
-├── 95_사람/👤 사람.md
+├── 90_영구/영구 노트.md           내 생각 = 영구 노트 (연결 2개 이상 강제)
+├── 95_사람/사람.md
 ├── 98_연동/                         외부 입력 상태
-│   ├── 🔌 연동.md                    허브 — YouKnow·GoodNotes·Calendar 상태, "YouKnow에 반영 필요" 목록
+│   ├── 연동.md                    허브 — YouKnow·GoodNotes·Calendar 상태, "YouKnow에 반영 필요" 목록
 │   ├── YouKnow.md                   앱 설정 + 마지막 가져오기 로그 (importer가 재생성)
 │   └── YouKnow/백업/                youknow-backup-*.json 보관 (.gitignore)
 ├── _Attachments/{YouKnow, GoodNotes, Images}   첨부 (그래프·Auto Note Mover 숨김)
@@ -65,7 +65,7 @@ second-brain/
 │   ├── Templates/                   Templater 템플릿 16개 (tpl-inbox 라우터, tpl-daily, tpl-task …)
 │   ├── Scripts/                     capture.js · import_youknow.py · import_goodnotes.py · tests/ · .env(.gitignore)
 │   ├── Graph/                       그래프 프리셋 full.json · knowledge.json · graph_preset.sh
-│   ├── Dashboards/🩺 Health.md      뇌 건강검진
+│   ├── Dashboards/Health.md      뇌 건강검진
 │   └── Docs/                        설계서 · 빠른 입력 문법 · 운영 루틴
 └── .obsidian/                       설정 커밋됨 (그래프 색·플러그인 설정 포함)
 ```
@@ -109,7 +109,7 @@ second-brain/
 앱은 교체하지 않습니다. Siri 단축어("YouKnow에 추가" → `POST /api/capture`), Scriptable 위젯, 사진 업로드·다운스케일, 날짜별 일기 종류 UI는 옵시디언 모바일로 다시 만들기엔 비싸고, 데이터는 전부 Supabase에 있습니다. 폰에서 적은 것은 **매일 밤 `import_youknow.py --supabase`** 가 볼트로 가져옵니다(7장).
 
 ### 3-3. 📋 Task Inbox · 일간 노트 체크박스
-노트까지는 필요 없는 할 일은 `30_할일/📋 Task Inbox.md`나 일간 노트의 `## ✅ 오늘 할 일` 아래에 `- [ ] 전구 사기 📅 2026-10-17`처럼 Tasks 문법으로 적습니다. ✅ 할 일 허브와 그날 일간 노트 `### 오늘 마감`에 자동으로 뜹니다. 주간 리뷰 때 필요하면 ⚡로 승격해 노트로 만듭니다.
+노트까지는 필요 없는 할 일은 `30_할일/Task Inbox.md`나 일간 노트의 `## ✅ 오늘 할 일` 아래에 `- [ ] 전구 사기 📅 2026-10-17`처럼 Tasks 문법으로 적습니다. ✅ 할 일 허브와 그날 일간 노트 `### 오늘 마감`에 자동으로 뜹니다. 주간 리뷰 때 필요하면 ⚡로 승격해 노트로 만듭니다.
 
 ### 3-4. Google Calendar — ICS 플러그인 (읽기 전용)
 Google Calendar(웹) › 캘린더 설정 › **비공개 주소(iCal)** 를 ICS 플러그인에 등록하면, `tpl-daily`가 일간 노트 `### 캘린더`에 그날 일정을 자동 삽입합니다. YouKnow의 Google OAuth 이벤트는 가져오지 않습니다(서버 세션 전용). 선택: 앱의 `/api/calendar.ics?type=tasks` 구독 주소를 ICS에 더하면 스크립트 없이 📌 마감이 뜨지만, importer와 같이 쓰면 중복이므로 둘 중 하나만.
@@ -120,9 +120,9 @@ GoodNotes › 설정 › 자동 백업(PDF) → 클라우드 폴더 → `python3
 ### 3-6. iOS 단축어 "뇌에 추가" (Advanced URI)
 YouKnow를 거치지 않고 옵시디언에 바로 넣는 길. Advanced URI 플러그인을 설치하고 단축어에서 아래 URL을 엽니다:
 ```
-obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}
+obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/빠른입력 {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}
 ```
-`data`는 반드시 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>`(위처럼 URL 인코딩)로 시작하고 그 다음 줄에 텍스트가 옵니다 — Templater의 폴더 템플릿은 **빈 파일**에만 적용되고, Advanced URI는 파일을 텍스트와 함께 만들기 때문에 이 줄이 없으면 `tpl-inbox`가 아예 실행되지 않고 ⚡ 노트가 Inbox에 날것으로 남습니다. 단축어에서 `{{텍스트}}`는 "URL 인코딩" 동작을 거쳐 넣으세요(`#프로젝트`·`9:30`·`&`가 살아남게). 파일명이 `⚡`로 시작하면 `tpl-inbox`가 메뉴 없이 본문을 `capture.js`로 바로 해석·분배합니다(명령 줄은 본문에서 제외). 공유 시트의 URL은 12번(자료) 분기로 보내면 됩니다.
+`data`는 반드시 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>`(위처럼 URL 인코딩)로 시작하고 그 다음 줄에 텍스트가 옵니다 — Templater의 폴더 템플릿은 **빈 파일**에만 적용되고, Advanced URI는 파일을 텍스트와 함께 만들기 때문에 이 줄이 없으면 `tpl-inbox`가 아예 실행되지 않고 ⚡ 노트가 Inbox에 날것으로 남습니다. 단축어에서 `{{텍스트}}`는 "URL 인코딩" 동작을 거쳐 넣으세요(`#프로젝트`·`9:30`·`&`가 살아남게). 파일명이 `빠른입력`으로 시작하면 `tpl-inbox`가 메뉴 없이 본문을 `capture.js`로 바로 해석·분배합니다(명령 줄은 본문에서 제외). 공유 시트의 URL은 12번(자료) 분기로 보내면 됩니다.
 
 ---
 
@@ -287,7 +287,7 @@ anon key는 번들에 공개된 값이지만 저장소에는 넣지 않습니다
 - 변경 없으면 파일을 열지도 않음(git 노이즈 방지).
 
 ### 7-5. `yk_dirty` — 수동 반영
-양방향 동기화가 아닙니다. 볼트에서 할 일 체크박스/`status`를 "더 진행"(완료·달성 못함)시켰거나 습관 체크·하루 계획 줄을 고쳤으면, importer가 앱 값과 다름을 감지해 할 일은 볼트 값을 유지하며 `yk_dirty: true`를, 습관 체크·계획은 앱 값으로 되돌리며 `yk_dirty`+로그를 남깁니다. [[🔌 연동]]의 **⚠️ YouKnow에 반영 필요** 표를 보고 앱에서 같은 값으로 바꾼 뒤 속성 `yk_dirty`를 지우면 다음 가져오기에서 사라집니다.
+양방향 동기화가 아닙니다. 볼트에서 할 일 체크박스/`status`를 "더 진행"(완료·달성 못함)시켰거나 습관 체크·하루 계획 줄을 고쳤으면, importer가 앱 값과 다름을 감지해 할 일은 볼트 값을 유지하며 `yk_dirty: true`를, 습관 체크·계획은 앱 값으로 되돌리며 `yk_dirty`+로그를 남깁니다. [[연동]]의 **⚠️ YouKnow에 반영 필요** 표를 보고 앱에서 같은 값으로 바꾼 뒤 속성 `yk_dirty`를 지우면 다음 가져오기에서 사라집니다.
 
 ### 7-6. 역방향 — 일기 쉼 `--export-diaries-for-youknow`
 ```bash

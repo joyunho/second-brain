@@ -20,7 +20,7 @@ if (existing.includes(M("plans", "start")) && !existing.includes("<" + "%*")) {
   const weekday = dowShort + "요일";
 
   // 🗓️ Google Calendar → ICS 플러그인이 있으면 그날 일정을 자동 삽입 (기존 코드 유지)
-  let events = "- _(ICS 플러그인을 설치하고 Google Calendar의 비공개 iCal 주소를 등록하면 여기에 일정이 자동으로 들어옵니다. → [[🔌 연동]])_";
+  let events = "- _(ICS 플러그인을 설치하고 Google Calendar의 비공개 iCal 주소를 등록하면 여기에 일정이 자동으로 들어옵니다. → [[연동]])_";
   try {
     const ics = app.plugins.getPlugin("ics");
     if (ics) {
@@ -97,7 +97,7 @@ ${M("habits", "end")}
 ${F}dataview
 LIST FROM "50_일기" WHERE date = date(${date})
 ${F}
-· [[📔 일기|오늘 일기 쓰기 →]]
+· [[일기|오늘 일기 쓰기 →]]
 
 ## 📝 메모
 - 

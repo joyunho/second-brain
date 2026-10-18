@@ -63,7 +63,7 @@ assert_grep "$T3" '- [/] 책 읽기: 아주 작은 습관의 힘 ⏬ 🛫 2026-1
 assert_grep "$T4" '- [-] 영어 단어 100개 🔽 🛫 2026-10-08 📅 2026-10-09 🆔 yk-d4e5f6a7'; assert_grep "$T4" 'status: 달성 못함'
 P1="40_프로젝트/유튜브 채널 개편/유튜브 채널 개편.md"; P2="40_프로젝트/방 정리/방 정리.md"
 assert_file "$P1"; assert_file "$P2"
-assert_grep "$P1" 'area: "[[유튜브]]"'; assert_grep "$P1" 'emoji: "🎬"'; assert_grep "$P1" 'up: "[[🗂️ 프로젝트]]"'; assert_grep "$P1" '마감: "[[2026-12-31]]"'
+assert_grep "$P1" 'area: "[[유튜브]]"'; assert_grep "$P1" 'emoji: "🎬"'; assert_grep "$P1" 'up: "[[프로젝트]]"'; assert_grep "$P1" '마감: "[[2026-12-31]]"'
 assert_grep "$P1" '- [x] 채널 아트 교체 %%yk:chk a1b2c3d4%%'; assert_grep "$P1" '  - 세부: 1920×1080'; assert_grep "$P1" '  ![[9f0e4455-art.jpg]]'
 assert_grep "$P1" '### 기획 %%yk:sec 5e5e1a2b%%'; assert_grep "$P1" '- [ ] 인트로 영상 %%yk:chk c3d4e5f6%%'
 assert_grep "$P1" '%% yk:resources_legacy:start %%'; assert_grep "$P1" '- 썸네일 레퍼런스 모으기'
@@ -74,7 +74,7 @@ R1="40_프로젝트/유튜브 채널 개편/자료/유튜브 영상.md"; R2="40_
 assert_file "$R1"; assert_file "$R2"; assert_grep "$R1" 'kind: 링크'; assert_grep "$R1" '🔗 https://www.youtube.com/watch?v=dQw4w9WgXcQ'; assert_grep "$R2" 'kind: 메모'
 assert_grep "$R1" 'project: "[[유튜브 채널 개편]]"'; assert_grep "$R1" 'updated: 2026-10-05'
 H1="60_습관/헬스.md"; assert_file "$H1"; assert_file "60_습관/영어.md"
-assert_grep "$H1" 'tags: [hub]'; assert_grep "$H1" 'up: "[[🔁 습관]]"'; assert_grep "$H1" 'color_name: 초록'; assert_grep "$H1" 'daily: "[[2026-09-20]]"'
+assert_grep "$H1" 'tags: [hub]'; assert_grep "$H1" 'up: "[[습관]]"'; assert_grep "$H1" 'color_name: 초록'; assert_grep "$H1" 'daily: "[[2026-09-20]]"'
 W5="20_일정/일과/금요일.md"; assert_file "$W5"; assert_file "20_일정/일과/일요일.md"
 assert_grep "$W5" 'type: 일과'; assert_grep "$W5" 'weekday: 5'; assert_grep "$W5" '| 07:00 | 08:00 | [[헬스]] | 초록 | %%yk:rt 3c4d5e6f%% |'
 assert_grep "20_일정/일과/수요일.md" '| 19:00 | — | [[영어]] | 하늘 | %%yk:rt 2b3c4d5e%% |'

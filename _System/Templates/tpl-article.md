@@ -4,7 +4,7 @@ let title = tp.file.title;
 if (/^(Untitled|제목 없음)/.test(title)) {
   const asked = await tp.system.prompt("제목");
   if (asked && asked.trim()) {
-    title = asked.trim().replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim() || "이름 없음";
+    title = asked.trim().replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, "").replace(/\s+/g, " ").trim() || "이름 없음";
     let dir = tp.file.folder(true); if (dir === "/") dir = "";   // 같은 이름이 있으면 " (2)" — rename 실패로 템플릿이 멈추지 않게
     let n = 1, t = title; while (app.vault.getAbstractFileByPath(`${dir ? dir + "/" : ""}${t}.md`)) { n += 1; t = `${title} (${n})`; }
     title = t; await tp.file.rename(title);
@@ -17,7 +17,7 @@ const area = areas.length ? (await tp.system.suggester(["없음", ...areas], [""
 -%>
 ---
 type: 글
-up: "[[📚 문헌]]"
+up: "[[문헌]]"
 url: 
 author: 
 kind: article
@@ -39,7 +39,7 @@ area: <% area ? `"[[${area}]]"` : "" %>
 ## 내 생각
 - 
 
-## 이 글에서 나온 영구 노트 (→ [[💎 영구 노트]])
+## 이 글에서 나온 영구 노트 (→ [[영구 노트]])
 ```dataview
 LIST FROM "90_영구" WHERE contains(source, link(this.file.name))
 ```

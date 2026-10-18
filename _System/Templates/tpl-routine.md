@@ -20,7 +20,7 @@ const weekday = Math.max(0, DOW.indexOf(name));
 const F = "```";
 tR += `---
 type: 일과
-up: "[[🗓️ 일정]]"
+up: "[[일정]]"
 weekday: ${weekday}
 ---
 # ${name} 일과

@@ -14,10 +14,10 @@ const today = tp.date.now("YYYY-MM-DD");
 const file = tp.config.target_file;
 const rawTitle = tp.file.title;
 const isUntitled = /^(Untitled|제목 없음)/.test(rawTitle);
-const isFlash = /^⚡/.test(rawTitle);          // Advanced URI "뇌에 추가" 단축어: 메뉴 없이 본문을 바로 파싱 — URL 의 data 가 tp.file.include("[[tpl-inbox]]") Templater 명령 줄로 시작해야 실행된다(폴더 템플릿은 빈 파일에만 적용됨; README 3-6)
+const isFlash = /^빠른입력/.test(rawTitle);          // Advanced URI "뇌에 추가" 단축어: 메뉴 없이 본문을 바로 파싱 — URL 의 data 가 tp.file.include("[[tpl-inbox]]") Templater 명령 줄로 시작해야 실행된다(폴더 템플릿은 빈 파일에만 적용됨; README 3-6)
 
 // ── 공용 도우미 ─────────────────────────────────────────────────────────────
-const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
+const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, "").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return (["Brain","Inbox","오늘","일정","할 일","Task Inbox","프로젝트","일기","습관","분야","문헌","영구 노트","사람","연동","Health"].includes(t) ? t + " (노트)" : t) || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
 const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 // 파일명용 E(): UTF-8 200바이트 안으로 자른다(ext4/APFS NAME_MAX 255 − " (n).md"; 한글 약 66자). 전체 제목은 frontmatter title/H1 에 남는다.
 const fname = (s) => { let t = E(s); const enc = new TextEncoder(); while (enc.encode(t).length > 200) t = t.slice(0, -1); t = t.trim().replace(/[. ]+$/g, ""); return t || "이름 없음"; };
@@ -110,7 +110,7 @@ const getOrCreateWeekday = async (dow) => {
   const folder = await ensureFolder("20_일정/일과");
   const tpl = tp.file.find_tfile("tpl-routine");
   if (tpl) tfile = await tp.file.create_new(tpl, name, false, folder);
-  else tfile = await app.vault.create(path, `---\ntype: 일과\nup: "[[🗓️ 일정]]"\nweekday: ${dow}\n---\n# ${name} 일과\n## 일과표\n%% yk:routines:start %%\n| 시작 | 끝 | 일과 | 색 | |\n| --- | --- | --- | --- | --- |\n%% yk:routines:end %%\n`);
+  else tfile = await app.vault.create(path, `---\ntype: 일과\nup: "[[일정]]"\nweekday: ${dow}\n---\n# ${name} 일과\n## 일과표\n%% yk:routines:start %%\n| 시작 | 끝 | 일과 | 색 | |\n| --- | --- | --- | --- | --- |\n%% yk:routines:end %%\n`);
   return tfile || app.vault.getAbstractFileByPath(path);
 };
 const createProject = async (name) => {
@@ -123,7 +123,7 @@ const createProject = async (name) => {
   let tfile = null;
   try {
     if (tpl) tfile = await tp.file.create_new(tpl, safe, false, folder);
-    else tfile = await app.vault.create(path, `---\ntype: 프로젝트\nup: "[[🗂️ 프로젝트]]"\nstatus: 진행 중\narea: "[[개인]]"\nstart: ${today}\ndaily: "[[${today}]]"\ncreated: ${today}\n---\n# 📁 ${safe}\n`);
+    else tfile = await app.vault.create(path, `---\ntype: 프로젝트\nup: "[[프로젝트]]"\nstatus: 진행 중\narea: "[[개인]]"\nstart: ${today}\ndaily: "[[${today}]]"\ncreated: ${today}\n---\n# 📁 ${safe}\n`);
   } finally { delete window.__ykProjectDraft; }
   return tfile || app.vault.getAbstractFileByPath(path);
 };
@@ -137,7 +137,7 @@ const createHabit = async (name) => {
   let tfile = null;
   try {
     if (tpl) tfile = await tp.file.create_new(tpl, safe, false, folder);
-    else tfile = await app.vault.create(path, `---\ntype: 습관\ntags: [hub]\nup: "[[🔁 습관]]"\ncreated: ${today}\ndaily: "[[${today}]]"\n---\n# 🔁 ${safe}\n`);
+    else tfile = await app.vault.create(path, `---\ntype: 습관\ntags: [hub]\nup: "[[습관]]"\ncreated: ${today}\ndaily: "[[${today}]]"\n---\n# 🔁 ${safe}\n`);
   } finally { delete window.__ykHabitDraft; }
   return tfile || app.vault.getAbstractFileByPath(path);
 };
@@ -261,7 +261,7 @@ const runCapture = async (text) => {
   const items = (parsed && parsed.items) || [];
   for (const w of (parsed && parsed.warnings) || []) notice(w);
   if (!items.length) { notice("나눌 항목을 찾지 못했어요. 그냥 캡처로 남깁니다."); return false; }
-  const KIND = { task: "✅ 할 일", plan: "🗓️ 계획", habit: "🔁 습관", routine: "🔄 일과", project: "🗂️ 프로젝트" };
+  const KIND = { task: "할 일", plan: "🗓️ 계획", habit: "습관", routine: "🔄 일과", project: "프로젝트" };
   const describe = (it) => {
     const bits = [KIND[it.kind] || it.kind, it.title];
     if (it.kind === "task") { if (it.due) bits.push(`📅 ${it.due}`); if (it.priority && it.priority !== 3) bits.push(PRIORITY_LABELS[it.priority]); if (it.project) bits.push(`#${it.project}`); }
@@ -318,15 +318,15 @@ const runCapture = async (text) => {
 const routes = [
   { id: "capture",  label: "⚡ 빠른 입력" },
   { id: "task",     label: "✅ 할 일 (한 개)" },
-  { id: "project",  label: "🗂️ 프로젝트",           folder: "40_프로젝트",   tpl: "tpl-project", ask: "프로젝트 이름" },
-  { id: "diary",    label: "📔 일기" },
+  { id: "project",  label: "프로젝트",           folder: "40_프로젝트",   tpl: "tpl-project", ask: "프로젝트 이름" },
+  { id: "diary",    label: "일기" },
   { id: "plan",     label: "🗓️ 하루 계획 (오늘)" },
-  { id: "habit",    label: "🔁 습관",               folder: "60_습관",       tpl: "tpl-habit",   ask: "습관 이름" },
+  { id: "habit",    label: "습관",               folder: "60_습관",       tpl: "tpl-habit",   ask: "습관 이름" },
   { id: "book",     label: "📖 독후감 / 책",         folder: "80_문헌/책",     tpl: "tpl-book",    ask: "책 제목" },
   { id: "article",  label: "📰 글 / 영상 / 강의",    folder: "80_문헌/글",     tpl: "tpl-article", ask: "제목" },
-  { id: "idea",     label: "💎 영구 노트",           folder: "90_영구",       tpl: "tpl-idea",    ask: "아이디어를 한 문장으로" },
-  { id: "person",   label: "👤 사람",               folder: "95_사람",       tpl: "tpl-person",  ask: "이름" },
-  { id: "area",     label: "🧭 분야",               folder: "70_분야",       tpl: "tpl-area",    ask: "분야 이름" },
+  { id: "idea",     label: "영구 노트",           folder: "90_영구",       tpl: "tpl-idea",    ask: "아이디어를 한 문장으로" },
+  { id: "person",   label: "사람",               folder: "95_사람",       tpl: "tpl-person",  ask: "이름" },
+  { id: "area",     label: "분야",               folder: "70_분야",       tpl: "tpl-area",    ask: "분야 이름" },
   { id: "resource", label: "📎 자료 (프로젝트에)" },
   { id: "inbox",    label: "📥 그냥 캡처 (Esc)" },
 ];
@@ -343,7 +343,7 @@ let routed = false;
 
 if (id === "capture") {
   let text = bodyText;
-  if (isFlash && !text) text = rawTitle.replace(/^⚡\s*/, "").replace(/^\d{4}-\d{2}-\d{2}[ T]?\d{2}[:.]?\d{2}(?:[:.]?\d{2})?\s*/, "");
+  if (isFlash && !text) text = rawTitle.replace(/^빠른입력\s*/, "").replace(/^\d{4}-\d{2}-\d{2}[ T]?\d{2}[:.]?\d{2}(?:[:.]?\d{2})?\s*/, "");
   if (!isFlash || !text) {
     const seed = [isUntitled ? "" : rawTitle, bodyText].filter(Boolean).join("\n");
     text = await tp.system.prompt("할 일·계획·습관을 막 적어보세요 (여러 줄도 돼요 · 예: 내일 오후 3시 치과 / 매주 월수금 저녁 7시 헬스 / - 9/10까지 영상 편집!!)", seed, false, true);

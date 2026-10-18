@@ -27,11 +27,12 @@ VAULT = Path(__file__).resolve().parents[2]
 PDF_DIR = VAULT / "_Attachments" / "GoodNotes"
 NOTE_DIR = VAULT / "80_문헌" / "굿노트"
 FORBIDDEN = re.compile(r'[\\/:*?"<>|#^\[\]]')
+EMOJI = re.compile("[\U0001F000-\U0001FAFF\u2600-\u27BF\u2B05-\u2B07\u2B1B\u2B1C\u2B50\u2B55\uFE0F\u200D\u20E3]")  # Dropbox 동기화가 이모지 파일명을 거부
 
 
 def safe_name(stem: str) -> str:
     """Obsidian 파일명/위키링크에 쓸 수 없는 문자를 제거합니다."""
-    return FORBIDDEN.sub("", stem).strip() or "untitled"
+    return EMOJI.sub("", FORBIDDEN.sub("", stem)).strip() or "untitled"
 
 
 def copy_new_pdfs(src: Path, dry_run: bool) -> list[Path]:
@@ -54,7 +55,7 @@ def copy_new_pdfs(src: Path, dry_run: bool) -> list[Path]:
 def note_body(stem: str, today: str) -> str:
     return f"""---
 type: 굿노트
-up: "[[📚 문헌]]"
+up: "[[문헌]]"
 pdf: "[[{stem}.pdf]]"
 daily: "[[{today}]]"
 created: {today}

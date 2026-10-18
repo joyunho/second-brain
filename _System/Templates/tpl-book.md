@@ -4,7 +4,7 @@ let title = tp.file.title;
 if (/^(Untitled|제목 없음)/.test(title)) {
   const asked = await tp.system.prompt("책 제목");
   if (asked && asked.trim()) {
-    title = asked.trim().replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim() || "이름 없음";
+    title = asked.trim().replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, "").replace(/\s+/g, " ").trim() || "이름 없음";
     let dir = tp.file.folder(true); if (dir === "/") dir = "";   // 같은 이름이 있으면 " (2)" — rename 실패로 템플릿이 멈추지 않게
     let n = 1, t = title; while (app.vault.getAbstractFileByPath(`${dir ? dir + "/" : ""}${t}.md`)) { n += 1; t = `${title} (${n})`; }
     title = t; await tp.file.rename(title);
@@ -17,7 +17,7 @@ const area = areas.length ? (await tp.system.suggester(["없음", ...areas], [""
 -%>
 ---
 type: 책
-up: "[[📚 문헌]]"
+up: "[[문헌]]"
 author: 
 status: reading
 rating: 
@@ -46,7 +46,7 @@ area: <% area ? `"[[${area}]]"` : "" %>
 ## 내 생각
 - 
 
-## 이 책에서 나온 영구 노트 (→ [[💎 영구 노트]] 로 독립시키기 · 영구 노트의 `source` 가 이 노트를 가리킵니다)
+## 이 책에서 나온 영구 노트 (→ [[영구 노트]] 로 독립시키기 · 영구 노트의 `source` 가 이 노트를 가리킵니다)
 ```dataview
 LIST FROM "90_영구" WHERE contains(source, link(this.file.name))
 ```

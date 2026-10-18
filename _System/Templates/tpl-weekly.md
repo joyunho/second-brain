@@ -16,12 +16,12 @@ const DOW = ["일", "월", "화", "수", "목", "금", "토"];
 -%>
 ---
 type: 주간
-up: "[[☀️ 오늘]]"
+up: "[[오늘]]"
 start: <% s %>
 end: <% e %>
 ---
 # 🗓️ <% title %> (<% start.format("M/D") %> ~ <% end.format("M/D") %>)
-← [[<% prev %>]] · [[<% next %>]] → · [[☀️ 오늘]]
+← [[<% prev %>]] · [[<% next %>]] → · [[오늘]]
 
 ## 이번 주 하루들
 <% days.map(d => `- [[${d.format("YYYY-MM-DD")}]] (${DOW[d.day()]})`).join("\n") %>
@@ -73,7 +73,7 @@ done after <% moment(appS).subtract(1, "day").format("YYYY-MM-DD") %>
 done before <% moment(appE).add(1, "day").format("YYYY-MM-DD") %>
 short mode
 ```
-> 할 일 노트의 ✅ 완료일은 앱에 완료 시각이 없어 **마감일로 간주**한 근사치입니다 ([[✅ 할 일]] 참고).
+> 할 일 노트의 ✅ 완료일은 앱에 완료 시각이 없어 **마감일로 간주**한 근사치입니다 ([[할 일]] 참고).
 
 ## 🧠 이번 주 생긴 뉴런
 ```dataview
@@ -94,4 +94,4 @@ SORT type ASC, file.cday ASC
 - 
 
 ### 연결 안 된 뉴런 이어주기
-> [[🩺 Health]] 대시보드에서 고아 노트를 확인하고 최소 하나씩 링크를 걸어 주세요.
+> [[Health]] 대시보드에서 고아 노트를 확인하고 최소 하나씩 링크를 걸어 주세요.

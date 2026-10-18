@@ -9,7 +9,7 @@ if (/\/자료$/.test(folder0)) {
   const draft = window.__ykProjectDraft || null;      // 라우터 ⚡ 빠른 입력이 만들 때: 질문 없이 기본값
   if (draft) delete window.__ykProjectDraft;
   const today = tp.date.now("YYYY-MM-DD");
-  const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
+  const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, "").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return (["Brain","Inbox","오늘","일정","할 일","Task Inbox","프로젝트","일기","습관","분야","문헌","영구 노트","사람","연동","Health"].includes(t) ? t + " (노트)" : t) || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
   const q = (s) => `"${String(s ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
   const aZ = (area, name) => { const a = `${area || ""} ${name}`;
     return /(건강|운동|헬스|몸)/.test(a) ? "💪" : /(유튜브|영상|채널)/.test(a) ? "🎬" : /(게임|에임|랭크)/.test(a) ? "🎮"
@@ -53,7 +53,7 @@ if (/\/자료$/.test(folder0)) {
   const F = "```";
   tR += `---
 type: 프로젝트
-up: "[[🗂️ 프로젝트]]"
+up: "[[프로젝트]]"
 status: ${status}
 area: "[[${area}]]"
 emoji: ${emoji}

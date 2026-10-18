@@ -4,7 +4,7 @@ let title = tp.file.title;
 if (/^(Untitled|제목 없음)/.test(title)) {
   const asked = await tp.system.prompt("분야 이름 (예: 건강, 커리어, 돈, 관계, 배움)");
   if (asked && asked.trim()) {
-    title = asked.trim().replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim() || "이름 없음";
+    title = asked.trim().replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, "").replace(/\s+/g, " ").trim() || "이름 없음";
     let dir = tp.file.folder(true); if (dir === "/") dir = "";   // 같은 이름이 있으면 " (2)" — rename 실패로 템플릿이 멈추지 않게
     let n = 1, t = title; while (app.vault.getAbstractFileByPath(`${dir ? dir + "/" : ""}${t}.md`)) { n += 1; t = `${title} (${n})`; }
     title = t; await tp.file.rename(title);
@@ -19,7 +19,7 @@ const emoji = aZ(title);
 ---
 type: 분야
 tags: [hub]
-up: "[[🧭 분야]]"
+up: "[[분야]]"
 emoji: <% emoji %>
 created: <% today %>
 ---

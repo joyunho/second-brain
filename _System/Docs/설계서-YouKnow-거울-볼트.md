@@ -14,7 +14,7 @@ source: YouKnow V17.2 라이브 앱 번들(page.pretty.js) 분석 + 읽기 전�
 > - §4-5 그래프 프리셋 스크립트는 `_System/Scripts/graph_preset.sh`가 아니라 `_System/Graph/graph_preset.sh`에 있다(Templater가 `_System/Scripts` 아래 .js만 읽지만 폴더를 분리해 두었다).
 > - §3-10 요일 일과표는 헤더 줄 아래에 `| --- | --- | --- | --- | --- |` 구분 줄이 한 줄 더 있다(없으면 표로 렌더링되지 않음). importer와 tpl-routine이 같은 표를 쓴다.
 > - §3-5 종류 facet의 `## 템플릿`은 코드 펜스가 아니라 `%% yk:template:start/end %%` 관리 블록이다(importer가 앱 설정으로 갱신).
-> - `30_할일/📋 Task Inbox.md`는 `type: inbox`, `_System/Dashboards/🩺 Health.md`는 `type: dashboard`로 둔다(둘 다 13개 허브가 아니며 모든 질의에서 제외되는 위치).
+> - `30_할일/Task Inbox.md`는 `type: inbox`, `_System/Dashboards/Health.md`는 `type: dashboard`로 둔다(둘 다 13개 허브가 아니며 모든 질의에서 제외되는 위치).
 > - 볼트에서 Untitled로 만든 노트의 이름이 겹치면 템플릿이 ` (2)`, ` (3)`을 붙인다(원문은 importer 충돌 규칙만 정의).
 
 ---
@@ -41,49 +41,49 @@ source: YouKnow V17.2 라이브 앱 번들(page.pretty.js) 분석 + 읽기 전�
 
 ```
 second-brain/
-├── 🧠 Brain.md                          KEEP    루트 허브. 뇌 영역 표를 12행으로, 뇌 지도 경로 배열 갱신
+├── Brain.md                          KEEP    루트 허브. 뇌 영역 표를 12행으로, 뇌 지도 경로 배열 갱신
 ├── 00_Inbox/                            KEEP    Ctrl+N 기본 생성 폴더(app.json newFileFolderPath). 그래프 필터로 제외
-│   └── 📥 Inbox.md                      KEEP    허브
+│   └── Inbox.md                      KEEP    허브
 ├── 10_오늘/                             RENAME  ← 10_Daily      (YouKnow #/today)
-│   ├── ☀️ 오늘.md                        RENAME  ← 📅 Daily.md   aliases: [Daily, 데일리, 오늘]
+│   ├── 오늘.md                        RENAME  ← 📅 Daily.md   aliases: [Daily, 데일리, 오늘]
 │   ├── YYYY/MM/YYYY-MM-DD.md            KEEP    일간 노트 = 그날의 #/today 화면. 하루 계획·습관 체크가 관리 블록으로 들어감
 │   └── Weekly/GGGG-Www.md               KEEP    주간 리뷰(= #/schedule/week)
 ├── 20_일정/                             ADD     (YouKnow #/schedule)
-│   ├── 🗓️ 일정.md                        ADD     허브: 이번 주 하루 계획 완료율, 7개 요일 노트, Google Calendar 안내
+│   ├── 일정.md                        ADD     허브: 이번 주 하루 계획 완료율, 7개 요일 노트, Google Calendar 안내
 │   └── 일과/일요일.md … 토요일.md        ADD     routine_blocks → 요일당 노트 1개(7개 고정, weekday 0~6)
 ├── 30_할일/                             RENAME  ← 30_Tasks      (YouKnow #/tasks) ※ 띄어쓰기 없음
-│   ├── ✅ 할 일.md                       RENAME  ← ✅ Tasks.md   목록(우선순위 5→1)·칸반(상태 4열)·마감 지남/오늘 마감
-│   ├── 📋 Task Inbox.md                 KEEP    노트 없는 한 줄 체크박스(Tasks 플러그인). 정리 때 ⚡로 승격
+│   ├── 할 일.md                       RENAME  ← ✅ Tasks.md   목록(우선순위 5→1)·칸반(상태 4열)·마감 지남/오늘 마감
+│   ├── Task Inbox.md                 KEEP    노트 없는 한 줄 체크박스(Tasks 플러그인). 정리 때 ⚡로 승격
 │   └── 목록/<할 일 제목>.md              ADD     tasks 행 1개 = 노트 1개 (#/tasks/:id 세부 메모 화면)
 ├── 40_프로젝트/                         ADD     ← 30_Tasks/Projects 이동 (YouKnow #/projects)
-│   ├── 🗂️ 프로젝트.md                    ADD     허브: 기간·진행률·마감까지·진도·다음 행동 표
+│   ├── 프로젝트.md                    ADD     허브: 기간·진행률·마감까지·진도·다음 행동 표
 │   └── <프로젝트명>/                     ADD     프로젝트 1개 = 폴더 1개 (folder note)
 │       ├── <프로젝트명>.md              ADD     projects 행 + 묶음/체크리스트 본문
 │       └── 자료/<자료 제목>.md           ADD     project_resources 행 1개 = 노트 1개 (#/projects/:id/notes/:rid) → 파랑
 ├── 50_일기/                             RENAME  ← 20_Journal    (YouKnow #/daily)
-│   ├── 📔 일기.md                        RENAME  ← 📓 Journal.md  aliases: [Journal, 저널, 일기]
+│   ├── 일기.md                        RENAME  ← 📓 Journal.md  aliases: [Journal, 저널, 일기]
 │   ├── YYYY/YYYY-MM-DD 일기.md          CHANGE  general 종류 (연도 하위폴더 추가)
 │   ├── YYYY/YYYY-MM-DD <종류명>.md       ADD     그 외 종류 (예: 2026-10-16 운동.md) — 앱 zip 내보내기 파일명과 동일
 │   ├── 종류/일반.md 운동.md …            ADD     settings.diary_types → facet (주황)
 │   ├── 기분/최고.md 좋음.md 보통.md 별로.md 힘듦.md   ADD  settings.moods → facet (주황)
 │   └── 태그/운동.md 게임.md 외출.md 친구.md 공부.md 유튜브.md 휴식.md 돈관리.md …  ADD  settings.tags ∪ 실사용 태그 → facet (주황)
 ├── 60_습관/                             ADD     (YouKnow #/habits)
-│   ├── 🔁 습관.md                        ADD     허브
+│   ├── 습관.md                        ADD     허브
 │   └── <습관명>.md                       ADD     habits 행 1개 = 노트 1개, tags: [hub] (일간 노트 수백 개가 가리키므로 빨강)
 ├── 70_분야/                             RENAME  ← 60_Areas (projects.area "분야")
-│   ├── 🧭 분야.md                        RENAME  ← 🧭 Areas.md   aliases: [Areas, 영역, 분야]
+│   ├── 분야.md                        RENAME  ← 🧭 Areas.md   aliases: [Areas, 영역, 분야]
 │   └── 개인.md 건강.md 커리어.md 돈.md 관계.md 배움.md …  KEEP+ADD  projects.area 값마다 자동 생성 ("개인" = 앱 기본값, 실제 노트로 둠)
 ├── 80_문헌/                             RENAME  ← 40_Library (Zettelkasten 문헌 노트 → 파랑)
-│   ├── 📚 문헌.md                        RENAME  ← 📚 Library.md
+│   ├── 문헌.md                        RENAME  ← 📚 Library.md
 │   ├── 책/                              RENAME  ← Books/
 │   ├── 글/                              RENAME  ← Articles/
 │   └── 굿노트/<노트북>.md                MOVE    ← 80_Sources/GoodNotes
 ├── 90_영구/                             RENAME  ← 50_Ideas (💎 영구 노트)
-│   └── 💎 영구 노트.md                    RENAME  ← 💡 Ideas.md   aliases: [Ideas, 아이디어]
+│   └── 영구 노트.md                    RENAME  ← 💡 Ideas.md   aliases: [Ideas, 아이디어]
 ├── 95_사람/                             RENAME  ← 70_People
-│   └── 👤 사람.md                        RENAME  ← 👤 People.md
+│   └── 사람.md                        RENAME  ← 👤 People.md
 ├── 98_연동/                             RENAME  ← 80_Sources
-│   ├── 🔌 연동.md                        RENAME  ← 🔌 Sources.md  GoodNotes·Google Calendar·YouKnow 상태, "YouKnow에 반영 필요" 목록
+│   ├── 연동.md                        RENAME  ← 🔌 Sources.md  GoodNotes·Google Calendar·YouKnow 상태, "YouKnow에 반영 필요" 목록
 │   ├── YouKnow.md                       ADD     settings 행 + 마이그레이션 플래그 + 마지막 가져오기 로그 (importer가 재생성)
 │   └── YouKnow/백업/                     ADD     youknow-backup-*.json 보관 (.gitignore)      ※ Calendar/, MetaData/ 는 REMOVE
 ├── _Attachments/                        RENAME  ← 90_Attachments (밑줄 접두 = 그래프·ANM 숨김 규칙 단일화)
@@ -99,7 +99,7 @@ second-brain/
 │   ├── Scripts/tests/fixture-backup.json ADD    각 테이블 2행 픽스처 + 두 번째 dry-run 쓰기 0건 테스트
 │   ├── Scripts/.env                     ADD     YK_SUPABASE_URL / YK_SUPABASE_ANON_KEY / YK_OWNER_ID / YK_WIDGET_KEY (.gitignore)
 │   ├── Graph/full.json, knowledge.json  ADD     그래프 프리셋 2개 (복사 전 그래프 뷰를 닫을 것)
-│   └── Dashboards/🩺 Health.md          KEEP    expect 맵·점검 항목 갱신 (8장 9단계)
+│   └── Dashboards/Health.md          KEEP    expect 맵·점검 항목 갱신 (8장 9단계)
 └── .obsidian/                           KEEP    graph.json 전면 교체, templater·auto-note-mover·periodic-notes·daily-notes·app.json 경로 갱신, types.json 확장, brain-graph.css 선 색 변경
 ```
 
@@ -123,7 +123,7 @@ second-brain/
 type: 허브
 tags: [hub]
 aliases: [Tasks, 할일, 할 일, 태스크]
-up: "[[🧠 Brain]]"
+up: "[[Brain]]"
 cssclasses: [hub]
 ```
 본문: 앱 화면의 헤더 카운트를 Dataviewjs로 재현. ✅ 할 일 → `남은 N · 오늘 마감 N · 마감 지남 N` + `## 목록`(우선순위 5→1: 긴급/중요/보통/낮음/언젠가 섹션, 활성 우선 → priority desc → due asc, due 없음은 "9999-99-99"로 마지막) + `## 칸반`(진행 전/진행 중/완료/달성 못함 4열) + Tasks 쿼리(📋 Task Inbox·일간 노트 체크박스). 📔 일기 → `N월 · 일기 N · 기록 R/D일` + 월 캘린더/목록/갤러리 + 종류 칩(종류 노트 링크). 🗓️ 일정 → 이번 주 하루 계획 완료율(일간 노트 `plans_done/plans` 집계), 7개 요일 노트 링크. 🔁 습관 → 오늘 n/m, 이번 주 %, 최장 연속. 🗂️ 프로젝트 → 표(프로젝트·기간·진행률·마감까지·진도·다음 행동).
@@ -174,7 +174,7 @@ habits_checked: 2
 %% yk:habits:end %%
 
 ## 📔 오늘 일기
-```dataview LIST FROM "50_일기" WHERE date = date(2026-10-16)```  · [[📔 일기|오늘 일기 쓰기 →]]
+```dataview LIST FROM "50_일기" WHERE date = date(2026-10-16)```  · [[일기|오늘 일기 쓰기 →]]
 
 ## 📝 메모
 - 
@@ -188,7 +188,7 @@ habits_checked: 2
 - 필수 선: prev, next, week, weekday(4) + 습관 n개 + 매칭된 계획 제목.
 
 ### 3-3. 주간 (type: 주간) — `10_오늘/Weekly/GGGG-Www.md`
-`type: 주간`, `up: "[[☀️ 오늘]]"`, `start`, `end`. 본문: 7일 링크, 이번 주 하루 계획 완료율(Dataviewjs: `plans_done`/`plans` 합), 이번 주 마감(일~토, 앱 주 보기와 동일), 이번 주 기분(`mood` 문자열 + `mood_score` 평균), Inbox 비우기, 끝낸 일(Tasks `done after/before`), 회고. 캘린더 플러그인 `weekStart: monday`는 유지하되 집계는 앱처럼 일요일 시작으로 계산한다(Dataviewjs 안에서 처리).
+`type: 주간`, `up: "[[오늘]]"`, `start`, `end`. 본문: 7일 링크, 이번 주 하루 계획 완료율(Dataviewjs: `plans_done`/`plans` 합), 이번 주 마감(일~토, 앱 주 보기와 동일), 이번 주 기분(`mood` 문자열 + `mood_score` 평균), Inbox 비우기, 끝낸 일(Tasks `done after/before`), 회고. 캘린더 플러그인 `weekStart: monday`는 유지하되 집계는 앱처럼 일요일 시작으로 계산한다(Dataviewjs 안에서 처리).
 
 ### 3-4. 일기 (type: 일기) — `50_일기/YYYY/YYYY-MM-DD 일기.md` (general) / `YYYY-MM-DD <E(종류명)>.md`
 ```yaml
@@ -243,7 +243,7 @@ yk_url: https://youknow-meta-data-weom.vercel.app/#/daily/2026-10-16?type=workou
 ```yaml
 # 종류
 type: 종류
-up: "[[📔 일기]]"
+up: "[[일기]]"
 yk_id: workout                 # diary_types[].id
 icon: dumbbell
 color: "#34d399"
@@ -252,13 +252,13 @@ template: "오늘 운동\n- \n\n느낀 점\n- "
 parts: [가슴, 등, 어깨, 팔, 하체, 코어, 유산소]
 # 기분
 type: 기분
-up: "[[📔 일기]]"
+up: "[[일기]]"
 emoji: 🙂                      # 최고🤩 좋음🙂 보통😐 별로😕 힘듦😞 (모르는 값은 생략)
 color: "#34d399"
 score: 4
 # 태그
 type: 태그
-up: "[[📔 일기]]"
+up: "[[일기]]"
 source: settings               # settings | used (앱 설정에 없지만 일기에 쓰인 값)
 ```
 본문: `# <값>` + `## 이 값의 일기`(Dataview 역링크 표) + 월별 카운트. 종류 노트는 `## 템플릿`(원문)도 가진다. 설정에서 사라진 값은 노트 유지 + `yk_deleted`.
@@ -302,7 +302,7 @@ yk_url: https://…/#/tasks/<id>
 ### 3-7. 프로젝트 (type: 프로젝트) — `40_프로젝트/<E(name)>/<E(name)>.md`
 ```yaml
 type: 프로젝트
-up: "[[🗂️ 프로젝트]]"
+up: "[[프로젝트]]"
 status: 진행 중                 # 진행 중|계획|보류|완료 (평문)
 area: "[[개인]]"                # projects.area → 70_분야 노트(없으면 생성)
 emoji: 🎬                       # aZ 규칙: 건강|운동|헬스|몸→💪 유튜브|영상|채널→🎬 게임|에임|랭크→🎮 스타일|패션|미용|헤어|옷→💇 공부|학교|시험|영어|독서→📚 돈|재테크|주식|저축|소비→💰 생활|집|방|정리→🏠 else 📁 (area+" "+name 대상)
@@ -368,7 +368,7 @@ yk_url: https://…/#/projects/<pid>/notes/<rid>
 ```yaml
 type: 습관
 tags: [hub]                     # 일간 노트 수백 개가 가리키는 구조 노드 → 빨강
-up: "[[🔁 습관]]"
+up: "[[습관]]"
 color: "#38bdf8"
 color_name: 하늘                # B 맵: #38bdf8 하늘 #34d399 초록 #f59e0b 호박 #fb923c 주황 #2dd4bf 청록 #f472b6 분홍 #a3e635 연두 #94a3b8 회색
 sort_order: 10
@@ -379,7 +379,7 @@ yk_url: https://…/#/habits
 본문: `# 🔁 <name>` · `## 기록`(Dataviewjs: 10_오늘 노트의 `- ✅ [[<name>]]` 줄을 세어 연속일(오늘 미체크면 어제부터 역산 — 앱 알고리즘), 이번 주 %, 최근 8주 막대) · `## 메모`.
 
 ### 3-10. 일과 (type: 일과) — `20_일정/일과/<요일>요일.md` (7개 고정)
-`type: 일과`, `up: "[[🗓️ 일정]]"`, `weekday: 5`(JS getDay, 0=일). 본문:
+`type: 일과`, `up: "[[일정]]"`, `weekday: 5`(JS getDay, 0=일). 본문:
 ```
 # 금요일 일과
 ## 일과표
@@ -394,7 +394,7 @@ yk_url: https://…/#/habits
 end_time `""`은 `—`. 일과 제목이 습관 노트와 같으면 링크.
 
 ### 3-11. 분야 (type: 분야) — `70_분야/<name>.md`
-`type: 분야`, `tags: [hub]`(→ 빨강; 기존 `[area, hub]`에서 `area` 제거), `up: "[[🧭 분야]]"`, `emoji`(aZ 규칙), `yk_area: true`(앱 값에서 생성됐을 때). 본문: 기존 tpl-area + 진행 중 프로젝트 Dataview를 `status != "완료"`로.
+`type: 분야`, `tags: [hub]`(→ 빨강; 기존 `[area, hub]`에서 `area` 제거), `up: "[[분야]]"`, `emoji`(aZ 규칙), `yk_area: true`(앱 값에서 생성됐을 때). 본문: 기존 tpl-area + 진행 중 프로젝트 Dataview를 `status != "완료"`로.
 
 ### 3-12. 책 / 글 / 굿노트 / 영구 / 사람 (type: 책 | 글 | 굿노트 | 영구 | 사람)
 기존 템플릿 유지. 변경: `tags`에서 유형 태그 제거, `up` 유지(노트 수가 적어 별이 되지 않음; 💎 영구 노트가 200개를 넘으면 Health가 경고), `area: "[[건강]]"`로 70_분야에 연결, 책/글/굿노트의 `## 이 책에서 나온 영구 노트`가 90_영구로 가는 문헌→영구 흐름. 영구 노트는 `source: "[[문헌 노트]]"` + 연결 최소 2개.
@@ -476,17 +476,17 @@ body { --graph-node: #e8ecf5; --graph-line: rgba(170,178,192,0.22); --graph-line
 
 | 소스 | 대상 | 파일명 | frontmatter (컬럼 → 키) | 본문 | 링크 |
 |---|---|---|---|---|---|
-| **settings** (user_id, site_name, moods[], tags[], diary_types[]) | `98_연동/YouKnow.md` + facet 생성: `50_일기/기분/<mood>.md`, `50_일기/태그/<tag>.md`(settings.tags ∪ 일기 실사용), `50_일기/종류/<name>.md`(general → 일반) | 값 이름 그대로(E) | YouKnow.md: `site_name, moods, tags, diary_types, flags, last_import, source, counts`(user_id 미기록). 종류: `yk_id=id, icon, color, kind, template, parts`. 기분: `emoji, color, score`(ap 맵). 태그: `source: settings\|used` | 종류 `## 템플릿`+역링크 표, 기분/태그 역링크 표 | facet `up: [[📔 일기]]`; 사라진 값은 `yk_deleted` |
+| **settings** (user_id, site_name, moods[], tags[], diary_types[]) | `98_연동/YouKnow.md` + facet 생성: `50_일기/기분/<mood>.md`, `50_일기/태그/<tag>.md`(settings.tags ∪ 일기 실사용), `50_일기/종류/<name>.md`(general → 일반) | 값 이름 그대로(E) | YouKnow.md: `site_name, moods, tags, diary_types, flags, last_import, source, counts`(user_id 미기록). 종류: `yk_id=id, icon, color, kind, template, parts`. 기분: `emoji, color, score`(ap 맵). 태그: `source: settings\|used` | 종류 `## 템플릿`+역링크 표, 기분/태그 역링크 표 | facet `up: [[일기]]`; 사라진 값은 `yk_deleted` |
 | **daily_logs** (id, title, log_date, mood, tags, body, photo_path, diary_type, metrics, deleted_at, created_at) | `50_일기/YYYY/` | `{log_date} 일기.md`(diary_type ∈ {null,"general"}) / `{log_date} {E(종류명)}.md`; 종류 id를 못 찾으면 id 문자열 | `type: 일기, title, date, daily:[[log_date]], diary_type(name), 종류:[[name]], mood(""면 생략), mood_score, 기분:[[mood]], tags, 태그:[[t]]…, parts/duration_min/intensity(kind=workout·비어 있으면 생략), 기록_<label>(general 커스텀 metrics), photos, cover(첫 사진), created=d(created_at), yk_id, yk_hash, yk_updated, yk_url=#/daily/{log_date}?type={diary_type}, yk_deleted=d(deleted_at)` | `# {title\|\|log_date}` → `%% yk:body %%` ← body → `## 📷 사진` → `## 생각 · 연결`(사용자) | 일기→일간, →종류, →기분, →태그 n |
 | **daily_photos** (id, daily_log_id, photo_path, caption, sort_order, created_at) | 바이너리 `_Attachments/YouKnow/daily/{log_date}/{basename(photo_path)}`; 메타는 부모 일기 `## 📷 사진` | basename 원문(`{uuid}-{sanitized}`, 다운스케일로 `.jpg`일 수 있음 → 확장자 추정 금지) | 부모 일기 `photos: N`, `cover` | `![[basename]]` (+첫 장 `(대표)`) + `> caption`; sort_order asc, created_at asc. 바이너리 없음(백업 모드) → `- 📷 {basename} — caption (앱에서만 보임)` | 일기→첨부(그래프에선 첨부 숨김). `photo_url`(서명 URL)은 버림 |
 | **tasks** (id, title, priority, start_date, due_date, status, project_id, note, deleted_at, created_at) | `30_할일/목록/` | `{E(title)}.md`(빈 제목 `새 할 일`, 충돌 ` (2)`) | `type: 할일, title, status(4값 평문), priority, priority_label(k), start, due, daily:[[start_date]], 마감:[[due_date]], project:[[projects.name]], created, yk_*, yk_url=#/tasks/{id}, yk_deleted` | `%% yk:task %%` 한 줄 `- [S] title {P} 🛫 start 📅 due 🆔 yk-id8` (S: 진행 전 ` `, 진행 중 `/`, 완료 `x`+`✅ due`, 달성 못함 `-`) → `## 세부 메모` `%% yk:note %%` ← note | 할 일→일간(start), →일간(due), →프로젝트 |
-| **projects** (id, name, goal, status, area, start_date, due_date, next_action, resources, deleted_at, created_at) | `40_프로젝트/{E(name)}/` | `{E(name)}.md`(folder note) | `type: 프로젝트, up:[[🗂️ 프로젝트]], status(평문), area:[[area\|\|개인]]`(70_분야 없으면 tpl-area 본문으로 생성, `yk_area: true`), `emoji=aZ(area,name), start, due(V15), daily:[[start_date]], 마감:[[due_date]], goal, next_action, created, yk_*, yk_url=#/projects/{id}` | `# {emoji} {name}` · `> {goal}` · `**다음 행동**: …` · `## 체크리스트`(아래) · `## 할 일`(Dataview) · `## 자료`(Dataview) + `### 메모 (예전 자료)` `%% yk:resources_legacy %%` ← resources · `## 진행`(Dataviewjs) | 프로젝트→분야, →일간 2개, →허브 |
+| **projects** (id, name, goal, status, area, start_date, due_date, next_action, resources, deleted_at, created_at) | `40_프로젝트/{E(name)}/` | `{E(name)}.md`(folder note) | `type: 프로젝트, up:[[프로젝트]], status(평문), area:[[area\|\|개인]]`(70_분야 없으면 tpl-area 본문으로 생성, `yk_area: true`), `emoji=aZ(area,name), start, due(V15), daily:[[start_date]], 마감:[[due_date]], goal, next_action, created, yk_*, yk_url=#/projects/{id}` | `# {emoji} {name}` · `> {goal}` · `**다음 행동**: …` · `## 체크리스트`(아래) · `## 할 일`(Dataview) · `## 자료`(Dataview) + `### 메모 (예전 자료)` `%% yk:resources_legacy %%` ← resources · `## 진행`(Dataviewjs) | 프로젝트→분야, →일간 2개, →허브 |
 | **project_sections** (id, project_id, name, sort_order) | 프로젝트 노트 `## 체크리스트` 안 `### {name} %%yk:sec id8%%` | — | — | sort_order asc; 묶음 없음 항목이 먼저 | 없음 |
 | **project_checklist** (id, project_id, text, details, done, photo_path, section_id, sort_order, created_at) | 프로젝트 노트 `%% yk:checklist %%` | — | — | `- [x\| ] {text} %%yk:chk id8%%` · details → `  - 세부: …`(줄바꿈은 `  - `로 이어붙임) · photo_path → `  ![[basename]]`(바이너리 `_Attachments/YouKnow/checklist/`) · 순서 created_at asc(앱 UI가 sort_order를 쓰지 않음) | 없음(잎 방지). Tasks 집계엔 체크박스로 포함 |
 | **project_resources** (id, project_id, title, url, body, sort_order, created_at, updated_at) | `40_프로젝트/{name}/자료/` | `{E(title) \|\| a$(url) \|\| '메모 N'}.md` | `type: 자료, project:[[name]], url, kind(링크\|메모), sort_order, daily:[[d(created_at)]], updated=d(updated_at\|\|created_at), yk_*, yk_url=#/projects/{pid}/notes/{rid}` | `# title` · `🔗 url` · `%% yk:body %%` ← body(마크다운) · `## 내 생각` · `## 여기서 나온 영구 노트` · `## 연결` | 자료→프로젝트, →일간 (파랑) |
-| **habits** (id, name, color, sort_order, created_at) | `60_습관/` | `{E(name)}.md`(빈 값 `새 습관`) | `type: 습관, tags:[hub], up:[[🔁 습관]], color, color_name(B), sort_order, created, daily:[[d(created_at)]], yk_*, yk_url=#/habits` | `# 🔁 name` · `## 기록`(Dataviewjs 연속일/주간%/8주) · `## 메모` | 습관→허브; 일간 노트들이 `- ✅ [[name]]`로 가리킴(가장 많은 선) |
+| **habits** (id, name, color, sort_order, created_at) | `60_습관/` | `{E(name)}.md`(빈 값 `새 습관`) | `type: 습관, tags:[hub], up:[[습관]], color, color_name(B), sort_order, created, daily:[[d(created_at)]], yk_*, yk_url=#/habits` | `# 🔁 name` · `## 기록`(Dataviewjs 연속일/주간%/8주) · `## 메모` | 습관→허브; 일간 노트들이 `- ✅ [[name]]`로 가리킴(가장 많은 선) |
 | **habit_checks** (id, habit_id, check_date) | `10_오늘/YYYY/MM/{check_date}.md` `## 🔁 습관` `%% yk:habits %%` | — | 일간 `habits_checked: N` | 그 날짜에 존재한 습관 전부를 `- ✅ [[name]]`(체크 있음) / `- ⬜ [[name]]`(없음), sort_order 순. **YouKnow 승**: 볼트에만 ✅인 줄은 ⬜로 바뀌고 `yk_dirty`+로그에 기록 | 일간→습관 |
-| **routine_blocks** (id, weekday, start_time, end_time, title, color) | `20_일정/일과/{['일','월','화','수','목','금','토'][weekday]}요일.md` `%% yk:routines %%` | 7개 고정 | 요일 노트 `type: 일과, weekday, up:[[🗓️ 일정]]`, `yk_url=#/schedule/routines` | 표 `\| start \| end\|\|'—' \| [[title]]?(습관 노트와 같으면 링크) \| B[color]\|\|color \| %%yk:rt id8%% \|` start_time asc | 일간 노트 `weekday` 링크; 계획 0개인 날 `![[금요일#일과표]]` 임베드 |
+| **routine_blocks** (id, weekday, start_time, end_time, title, color) | `20_일정/일과/{['일','월','화','수','목','금','토'][weekday]}요일.md` `%% yk:routines %%` | 7개 고정 | 요일 노트 `type: 일과, weekday, up:[[일정]]`, `yk_url=#/schedule/routines` | 표 `\| start \| end\|\|'—' \| [[title]]?(습관 노트와 같으면 링크) \| B[color]\|\|color \| %%yk:rt id8%% \|` start_time asc | 일간 노트 `weekday` 링크; 계획 0개인 날 `![[금요일#일과표]]` 임베드 |
 | **day_plans** (id, plan_date, start_time, end_time, title, color, done, failed) | `10_오늘/YYYY/MM/{plan_date}.md` `### 하루 계획` `%% yk:plans %%` | — | 일간 `plans: N, plans_done: N` | `- ✅\|❌\|⬜ {start}–{end} {title\|\|[[title]]} {failed?'(달성 못함)'} %%yk:plan id8 {B[color]}%%` start_time asc(색은 마커에 보존 — 무손실). 마커 없는 줄(Obsidian 작성)은 블록 뒤에 보존 | 제목이 습관/일과 노트와 같을 때만 일간→습관/일과 |
 | **youknow-backup-YYYY-MM-DD.json** | `98_연동/YouKnow/백업/`(.gitignore) → `--backup` | — | exported_at → YouKnow.md `last_backup` | 위 8테이블 규칙 그대로; 없는 4테이블(habits, habit_checks, routine_blocks, day_plans)은 "건너뜀(백업에 없음)" 로그, 기존 블록 불변 | — |
 | **youknow-obsidian-YYYY-MM-DD.zip** | `--zip` fallback | `일기/*.md`만 | date/type/mood/tags/parts/duration_min/intensity를 읽어 50_일기 생성, `yk_key: "{date}\|{type}"`로 중복 방지; 나중에 REST/JSON이 (log_date, 종류명)으로 채택해 yk_id 채움 | `프로젝트/*.md`, `할 일.md`, `README.md`는 **가져오지 않음**(id 없음·due_date/자료/묶음 누락·JSON에 상위 집합) | — |
@@ -529,7 +529,7 @@ body { --graph-node: #e8ecf5; --graph-line: rgba(170,178,192,0.22); --graph-line
 `import_goodnotes.py` 유지, 출력 `80_문헌/굿노트/<노트북>.md`, PDF `_Attachments/GoodNotes/`. tpl-goodnotes에서 유형 태그 제거·`type: 굿노트`·`area` 질문.
 
 ### 6-5. 단축어 / 위젯
-① YouKnow "YouKnow에 추가"(Siri)·Scriptable 위젯 그대로(→ 앱 → 야간 import). ② Obsidian 직행 단축어 "뇌에 추가"(Advanced URI 플러그인 추가 설치): `obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/⚡ {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}`(`data`는 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>` 로 시작 — Templater 폴더 템플릿은 빈 파일에만 적용되므로 이 줄이 tpl-inbox를 실행시킨다) → tpl-inbox가 파일명이 `⚡`로 시작하면 메뉴 없이 capture.js로 본문을 바로 파싱·라우팅. 공유 시트 URL은 12번 자료 분기.
+① YouKnow "YouKnow에 추가"(Siri)·Scriptable 위젯 그대로(→ 앱 → 야간 import). ② Obsidian 직행 단축어 "뇌에 추가"(Advanced URI 플러그인 추가 설치): `obsidian://adv-uri?vault=second-brain&filepath=00_Inbox/빠른입력 {{날짜시간}}.md&mode=new&data=%3C%25*%20tR%20%2B%3D%20await%20tp.file.include(%22%5B%5Btpl-inbox%5D%5D%22)%20%25%3E%0A{{텍스트}}`(`data`는 Templater 명령 줄 `<%* tR += await tp.file.include("[[tpl-inbox]]") %>` 로 시작 — Templater 폴더 템플릿은 빈 파일에만 적용되므로 이 줄이 tpl-inbox를 실행시킨다) → tpl-inbox가 파일명이 `빠른입력`으로 시작하면 메뉴 없이 capture.js로 본문을 바로 파싱·라우팅. 공유 시트 URL은 12번 자료 분기.
 
 ### 6-6. 📋 Task Inbox · 일간 체크박스
 노트 없는 할 일은 계속 허용. 주간 리뷰에서 ⚡로 승격하거나 그대로 둠. ✅ 할 일 허브와 일간 노트는 Dataview(노트형)와 Tasks 쿼리(체크박스형)를 둘 다 보여 준다.

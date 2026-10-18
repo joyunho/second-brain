@@ -8,7 +8,7 @@ const area = areas.length ? (await tp.system.suggester(["없음", ...areas], [""
 -%>
 ---
 type: 굿노트
-up: "[[📚 문헌]]"
+up: "[[문헌]]"
 pdf: "[[<% title %>.pdf]]"
 daily: "[[<% today %>]]"
 created: <% today %>
@@ -16,13 +16,13 @@ area: <% area ? `"[[${area}]]"` : "" %>
 ---
 # ✍️ <% title %>
 
-> [!info] GoodNotes 에서 가져온 손글씨 노트 ([[🔌 연동]])
+> [!info] GoodNotes 에서 가져온 손글씨 노트 ([[연동]])
 > 원본 PDF: `_Attachments/GoodNotes/<% title %>.pdf`
 
 ## 핵심 정리 (손글씨 → 텍스트)
 - 
 
-## 이 노트에서 나온 영구 노트 (→ [[💎 영구 노트]])
+## 이 노트에서 나온 영구 노트 (→ [[영구 노트]])
 ```dataview
 LIST FROM "90_영구" WHERE contains(source, link(this.file.name))
 ```

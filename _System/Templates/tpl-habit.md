@@ -4,7 +4,7 @@
 const draft = window.__ykHabitDraft || null;      // 라우터 ⚡ 빠른 입력: 질문 없이 색 자동 배정
 if (draft) delete window.__ykHabitDraft;
 const today = tp.date.now("YYYY-MM-DD");
-const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return t || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
+const E = (s) => { const t = String(s ?? "").replace(/[\\/:*?"<>|#^\[\]]/g, " ").replace(/[\p{Extended_Pictographic}\u{FE0F}\u{200D}\u{20E3}]/gu, "").replace(/\s+/g, " ").trim().replace(/^[. ]+|[. ]+$/g, ""); return (["Brain","Inbox","오늘","일정","할 일","Task Inbox","프로젝트","일기","습관","분야","문헌","영구 노트","사람","연동","Health"].includes(t) ? t + " (노트)" : t) || "이름 없음"; };   // 앞뒤 점 제거: 점으로 시작하는 파일은 Obsidian 이 숨긴다
 const PALETTE = [["#38bdf8", "하늘"], ["#34d399", "초록"], ["#f59e0b", "호박"], ["#fb923c", "주황"], ["#2dd4bf", "청록"], ["#f472b6", "분홍"], ["#a3e635", "연두"], ["#94a3b8", "회색"]];
 const safeRename = async (base) => {   // 같은 폴더에 같은 이름이 있으면 " (2)", " (3)" — rename 실패로 템플릿이 멈추지 않게
   let dir = tp.file.folder(true); if (dir === "/") dir = "";
@@ -36,7 +36,7 @@ const F = "```";
 tR += `---
 type: 습관
 tags: [hub]
-up: "[[🔁 습관]]"
+up: "[[습관]]"
 color: "${pal[0]}"
 color_name: ${pal[1]}
 sort_order: ${maxOrder + 10}

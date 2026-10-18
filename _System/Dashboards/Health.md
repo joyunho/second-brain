@@ -1,6 +1,7 @@
 ---
 type: dashboard
-up: "[[🧠 Brain]]"
+aliases: [🩺 Health]
+up: "[[Brain]]"
 ---
 # 🩺 Health — 뇌 건강검진
 
@@ -19,7 +20,7 @@ SORT file.cday ASC
 ```dataview
 TABLE WITHOUT ID file.link AS "노트", type AS "유형", file.folder AS "폴더"
 FROM -"_System" AND -"_Attachments"
-WHERE !up AND file.name != "🧠 Brain"
+WHERE !up AND file.name != "Brain"
   AND contains(list("허브", "종류", "기분", "태그", "분야", "습관", "일과", "주간", "프로젝트", "책", "글", "굿노트", "영구", "사람"), type)
 SORT file.folder ASC
 ```
@@ -86,7 +87,7 @@ dup.length ? dv.table(["yk_id", "노트"], dup.map(([id, links]) => [id, links.j
 ```
 
 ## 📲 YouKnow 동기화 상태
-### `yk_dirty` — 볼트 변경이 앱에 반영 안 됨 (→ [[🔌 연동]]에서 처리)
+### `yk_dirty` — 볼트 변경이 앱에 반영 안 됨 (→ [[연동]]에서 처리)
 ```dataview
 TABLE WITHOUT ID file.link AS "노트", type AS "유형", status AS "볼트 상태", file.mtime AS "수정"
 FROM -"_System"

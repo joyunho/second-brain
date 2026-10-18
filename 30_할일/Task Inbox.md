@@ -1,7 +1,7 @@
 ---
 type: inbox
-aliases: [Task Inbox, 할 일 인박스]
-up: "[[✅ 할 일]]"
+aliases: [📋 Task Inbox, 할 일 인박스]
+up: "[[할 일]]"
 ---
 # 📋 Task Inbox
 
