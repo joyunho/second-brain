@@ -236,6 +236,7 @@ bash _System/Graph/graph_preset.sh knowledge    # 또는 full
    | 7 | **Advanced URI** (`obsidian-advanced-uri`) | 단축어 "뇌에 추가" | 3-6의 URL로 보낸 ⚡ 노트가 Inbox에 남지 않고 일간 노트/할 일로 나뉘는지(그냥 열리기만 하면 `data`의 Templater 명령 줄 누락) |
    | 8 | **Obsidian Git** *(데스크톱)* | 자동 커밋/푸시 | 10분 간격. 가져오기 작업 중엔 잠시 끄기 |
    | 9 | **QuickAdd** *(선택)* | 단축키 한 줄 캡처 | 📋 Task Inbox로 Capture |
+   | 10 | **Remotely Save** | 기기 간 동기화 (OneDrive 무료 5GB) | `OneDrive (for personal)` Auth, `Sync config dir`·`Sync underscore items` 켜기 ([[_System/Docs/동기화-설정|동기화 설정]] B절) |
 3. **CSS 스니펫** — 설정 › 모양 › CSS 스니펫 › `brain-graph` 켜기.
 4. **첫 테스트** — `Ctrl/Cmd+N` → `⚡ 빠른 입력` → `내일 오후 3시 치과` 한 줄 → 미리보기에서 "1개로 나눴어요 · 모두 추가". 내일 날짜의 `10_오늘/YYYY/MM/` 일간 노트가 생기고 `### 하루 계획` 아래에 `- ⬜ 15:00–16:00 치과`가 들어가면 성공. 그래프를 열어 빨강(허브·분야)과 흰 점이 보이는지 확인.
 5. **YouKnow 키** — `_System/Scripts/.env` 작성(7-2). 그 뒤 7장 1차 가져오기.
